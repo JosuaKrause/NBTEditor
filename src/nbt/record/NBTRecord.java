@@ -66,4 +66,20 @@ public abstract class NBTRecord {
         return hasChanged;
     }
 
+    public NBTType getType() {
+        return tagId;
+    }
+
+    public String getTypeInfo() {
+        return getType() + (hasSize() ? " " + size() : "");
+    }
+
+    public boolean hasSize() {
+        return false;
+    }
+
+    public int size() {
+        return 0;
+    }
+
 }

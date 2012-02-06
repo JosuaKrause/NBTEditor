@@ -21,11 +21,12 @@ public class NBTCellRenderer implements TreeCellRenderer {
             return new JLabel(chg
                     + (rec.isTextEditable() ? rec.getParseablePayload() : ""));
         }
+        final String type = " (" + rec.getTypeInfo() + ")";
         return new JLabel(
                 chg
                         + name
+                        + type
                         + (rec.isTextEditable() ? ": "
                                 + rec.getParseablePayload() : ""));
     }
-
 }

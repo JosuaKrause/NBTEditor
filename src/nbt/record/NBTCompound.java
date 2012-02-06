@@ -46,6 +46,12 @@ public class NBTCompound extends NBTRecord {
         return -1;
     }
 
+    @Override
+    public boolean hasSize() {
+        return true;
+    }
+
+    @Override
     public int size() {
         return map.size();
     }

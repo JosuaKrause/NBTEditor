@@ -78,8 +78,19 @@ public class NBTList extends NBTRecord {
         }
     }
 
-    public NBTType getType() {
-        return type;
+    @Override
+    public String getTypeInfo() {
+        return super.getTypeInfo() + " " + type;
+    }
+
+    @Override
+    public boolean hasSize() {
+        return true;
+    }
+
+    @Override
+    public int size() {
+        return getLength();
     }
 
     @Override

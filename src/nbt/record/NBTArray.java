@@ -68,6 +68,16 @@ public class NBTArray extends NBTRecord {
     }
 
     @Override
+    public boolean hasSize() {
+        return true;
+    }
+
+    @Override
+    public int size() {
+        return getLength();
+    }
+
+    @Override
     public void writePayload(final ByteWriter out) throws IOException {
         out.write(arr);
     }
