@@ -7,19 +7,19 @@ the data of the worlds.
 The project can be build via ANT (build.xml).
 The following jars are generated:
 
-- *nbt*
+-   *nbt*
 
-  A command line version to generate readable nbt representations.
-  In combination with with the source package this jar can be
-  imported in other projects to use the nbt api.
+    A command line version to generate readable nbt representations.
+    In combination with with the source package this jar can be
+    imported in other projects to use the nbt api.
   
-- *nbt_edit*
+-   *nbt_edit*
 
-  The visual nbt editor.
+    The visual nbt editor.
 
-- *nbt_src*
+-   *nbt_src*
 
-  A zip file containing the sources of this project.
+    A zip file containing the sources of this project.
 
 ### The NBT format
 
