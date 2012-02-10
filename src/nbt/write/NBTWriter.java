@@ -11,21 +11,17 @@ import nbt.record.NBTRecord;
 
 public class NBTWriter extends ByteWriter {
 
-    private static final OutputStream toZip(final File file) throws IOException {
-        return new GZIPOutputStream(new BufferedOutputStream(
-                new FileOutputStream(file)));
-    }
+	public NBTWriter(final File file) throws IOException {
+		this(new BufferedOutputStream(new FileOutputStream(file)), true);
+	}
 
-    public NBTWriter(final File file) throws IOException {
-        this(toZip(file));
-    }
+	public NBTWriter(final OutputStream out, final boolean wrapZip)
+			throws IOException {
+		super(wrapZip ? new GZIPOutputStream(out) : out);
+	}
 
-    public NBTWriter(final OutputStream out) {
-        super(out);
-    }
-
-    public void write(final NBTRecord record) throws IOException {
-        record.write(this);
-    }
+	public void write(final NBTRecord record) throws IOException {
+		record.write(this);
+	}
 
 }

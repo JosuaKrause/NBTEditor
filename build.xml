@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="all" name="build the nbt editor jars">
+  <!-- important directories / files -->
+  <property name="license" location="LICENSE"/>	
+  <property name="src" location="src"/>
+  <property name="bin" location="bin"/>
+  <property name="cli" location="nbt.jar"/>
+  <property name="zipsrc" location="nbt_src.zip"/>
+  <property name="gui" location="nbt_edit.jar"/>
+  <!-- the actual targets -->
+  <target name="compile">
+    <mkdir dir="${bin}"/>
+    <!-- compile the whole source folder -->
+    <javac srcdir="${src}" destdir="${bin}" verbose="yes">
+    </javac>
+  </target>
+  <target name="jars">
+    <jar destfile="${cli}">
+      <manifest>
+        <attribute name="Main-Class" value="nbt.MainCommandLine"/>
+        <attribute name="Class-Path" value="."/>
+      </manifest>
+      <fileset dir="${bin}">
+      </fileset>
+      <fileset file="${license}" />
+    </jar>
+    <jar destfile="${gui}">
+      <manifest>
+        <attribute name="Main-Class" value="nbt.MainEditor"/>
+        <attribute name="Class-Path" value="."/>
+      </manifest>
+      <fileset dir="${bin}">
+      </fileset>
+      <fileset file="${license}" />
+    </jar>
+  </target>
+  <target name="src">
+    <zip destfile="${zipsrc}">
+      <fileset dir="${src}">
+      </fileset>
+      <fileset file="${license}" />
+    </zip>
+  </target>
+  <!-- builds the targets in the given order -->
+  <target name="all"
+    depends="compile,jars,src"
+    description="Build all jars"
+    />
+</project>

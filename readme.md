@@ -1,7 +1,27 @@
+### NBT Editor
 
 The NBT Editor is an easy to use NBT editor.
 The NBT file format is used by minecraft to store
 the data of the worlds.
+
+The project can be build via ANT (build.xml).
+The following jars are generated:
+
+- *nbt*
+
+  A command line version to generate readable nbt representations.
+  In combination with with the source package this jar can be
+  imported in other projects to use the nbt api.
+  
+- *nbt_edit*
+
+  The visual nbt editor.
+
+- *nbt_src*
+
+  A zip file containing the sources of this project.
+
+### The NBT format
 
 The content of a NBT file is a gzipped stream of
 byte data. The following grammar is a complete
@@ -64,3 +84,10 @@ description of the format:
 
 The start symbol is RECORD and all numeric symbols stand for
 the byte representation.
+
+### NBT API
+
+This project also provides an api to manipulate nbt files.
+With the classes `nbt.read.NBTReader` and `nbt.write.NBTWriter`
+streams or files containing nbt content can be read and written.
+The class `nbt.record.NBTRecord` is the main class for nbt content.

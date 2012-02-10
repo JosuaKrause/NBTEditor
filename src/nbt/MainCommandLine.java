@@ -1,9 +1,7 @@
 package nbt;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.zip.GZIPInputStream;
 
 import nbt.read.NBTReader;
 import nbt.record.NBTRecord;
@@ -18,8 +16,7 @@ public class MainCommandLine {
 		try {
 			final NBTReader read;
 			if (args[0].equals("-")) {
-				read = new NBTReader(new GZIPInputStream(
-						new BufferedInputStream(System.in)));
+				read = new NBTReader(System.in, true);
 			} else {
 				read = new NBTReader(new File(args[0]));
 			}
