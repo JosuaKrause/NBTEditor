@@ -5,11 +5,11 @@ import java.text.ParseException;
 
 import nbt.write.ByteWriter;
 
-public class NBTArray extends NBTRecord {
+public class NBTByteArray extends NBTRecord {
 
     protected byte[] arr;
 
-    public NBTArray(final String name, final byte[] arr) {
+    public NBTByteArray(final String name, final byte[] arr) {
         super(NBTType.BYTE_ARRAY, name);
         this.arr = arr;
     }

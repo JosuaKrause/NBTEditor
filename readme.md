@@ -29,8 +29,8 @@ description of the format:
 
     RECORD := END | REAL_RECORD
     
-    REAL_RECORD := BYTE | SHORT | INT | LONG | FLOAT
-                 | DOUBLE | ARRAY | STRING | LIST | COMPOUND
+    REAL_RECORD := BYTE | SHORT | INT | LONG | FLOAT | DOUBLE
+                 | BYTE_ARRAY | STRING | LIST | COMPOUND | INT_ARRAY
     
     END := 0
     
@@ -46,13 +46,15 @@ description of the format:
     
     DOUBLE := 6 NAME RAW_DOUBLE
     
-    ARRAY := 7 NAME RAW_ARRAY
+    BYTE_ARRAY := 7 NAME RAW_BYTE_ARRAY
     
     STRING := 8 NAME RAW_STRING
     
     LIST := 9 NAME RAW_LIST
     
     COMPOUND := 10 NAME RAW_COMPOUND
+    
+    INT_ARRAY := 11 NAME RAW_INT_ARRAY
     
     NAME := RAW_STRING
     
@@ -68,7 +70,7 @@ description of the format:
     
     RAW_DOUBLE := <big endian IEEE 754-2008 double>
     
-    RAW_ARRAY := RAW_INT <byte array with length given by integer>
+    RAW_BYTE_ARRAY := RAW_INT <byte array with length given by integer>
     
     RAW_STRING := RAW_SHORT <utf8 string with length given by short>
     
@@ -77,10 +79,12 @@ description of the format:
     ITEM := RAW_ITEM (ITEM |)
     
     RAW_ITEM := RAW_BYTE | RAW_SHORT | RAW_INT | RAW_LONG | RAW_FLOAT
-              | RAW_DOUBLE | RAW_ARRAY | RAW_STRING | RAW_LIST | RAW_COMPOUND
+              | RAW_DOUBLE | RAW_BYTE_ARRAY | RAW_STRING | RAW_LIST | RAW_COMPOUND
     
     // names within a compound must be unique
     RAW_COMPOUND := REAL_RECORD RAW_COMPOUND | END
+    
+    RAW_INT_ARRAY := RAW_INT <int array with length given by integer>
 
 The start symbol is RECORD and all numeric symbols stand for
 the byte representation.
