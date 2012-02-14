@@ -6,8 +6,8 @@ import nbt.gui.NBTFrame;
 
 public class MainEditor {
 
-	public static void main(final String[] args) throws IOException {
-		new NBTFrame().setVisible(true);
-	}
+    public static void main(final String[] args) throws IOException {
+        new NBTFrame().setVisible(true);
+    }
 
 }

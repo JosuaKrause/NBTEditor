@@ -12,17 +12,17 @@ import nbt.record.NBTType;
 
 public class NBTReader extends PushBackReader {
 
-	public NBTReader(final File file) throws IOException {
-		this(new BufferedInputStream(new FileInputStream(file)), true);
-	}
+    public NBTReader(final File file) throws IOException {
+        this(new BufferedInputStream(new FileInputStream(file)), true);
+    }
 
-	public NBTReader(final InputStream is, final boolean wrapZip)
-			throws IOException {
-		super(wrapZip ? new GZIPInputStream(is) : is);
-	}
+    public NBTReader(final InputStream is, final boolean wrapZip)
+            throws IOException {
+        super(wrapZip ? new GZIPInputStream(is) : is);
+    }
 
-	public NBTRecord read() throws IOException {
-		return NBTType.readRecord(this);
-	}
+    public NBTRecord read() throws IOException {
+        return NBTType.readRecord(this);
+    }
 
 }
