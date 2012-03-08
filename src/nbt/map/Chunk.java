@@ -86,15 +86,24 @@ public class Chunk {
         return Biomes.getBlockForId(getBiomeFor(x, z));
     }
 
+    private final Color colors[][] = new Color[16][16];
+
+    public void changeAt(final int x, final int z) {
+        colors[x][z] = null;
+    }
+
     public Color getColorForColumn(final int x, final int z) {
-        int y = 0;
-        Color res = new Color(0, true);
-        while (hasBlockFor(y)) {
-            final Blocks b = Blocks.getBlockForId(getBlockFor(x, y, z));
-            res = combine(res, b.color);
-            ++y;
+        if (colors[x][z] == null) {
+            int y = 0;
+            Color res = new Color(0, true);
+            while (hasBlockFor(y)) {
+                final Blocks b = Blocks.getBlockForId(getBlockFor(x, y, z));
+                res = combine(res, b.color);
+                ++y;
+            }
+            colors[x][z] = res;
         }
-        return res;
+        return colors[x][z];
     }
 
     private static Color combine(final Color old, final Color add) {
