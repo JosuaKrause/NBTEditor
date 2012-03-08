@@ -14,7 +14,7 @@ public class MapFrame extends JFrame {
     public MapFrame() {
         setTitle(null, false);
         setPreferredSize(new Dimension(800, 600));
-        final MapViewer view = new MapViewer(this, 8.0);
+        final MapViewer view = new MapViewer(this, 2.0);
         setLayout(new BorderLayout());
         add(view, BorderLayout.CENTER);
         add(new MapEdit(view, this), BorderLayout.SOUTH);

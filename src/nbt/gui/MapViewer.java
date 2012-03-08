@@ -8,8 +8,8 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileFilter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JComponent;
 
@@ -22,7 +22,7 @@ public class MapViewer extends JComponent {
 
     private static final long serialVersionUID = 553314683721005657L;
 
-    private final List<Chunk> chunks;
+    private final Map<Pair, Chunk> chunks;
 
     private int offX;
 
@@ -34,7 +34,7 @@ public class MapViewer extends JComponent {
 
     public MapViewer(final MapFrame frame, final double scale) {
         this.frame = frame;
-        chunks = new ArrayList<Chunk>();
+        chunks = new HashMap<Pair, Chunk>();
         this.scale = scale;
         final MouseAdapter mouse = new MouseAdapter() {
 
@@ -104,12 +104,7 @@ public class MapViewer extends JComponent {
     public Chunk getChunkAtScreen(final int x, final int z) {
         final int cx = (int) ((offX + x) / scale) / 16 - (offX + x < 0 ? 1 : 0);
         final int cz = (int) ((offZ + z) / scale) / 16 - (offZ + z < 0 ? 1 : 0);
-        for (final Chunk c : chunks) {
-            if (c.getX() / 16 == cx && c.getZ() / 16 == cz) {
-                return c;
-            }
-        }
-        return null;
+        return chunks.get(new Pair(cx * 16, cz * 16));
     }
 
     public Pair getPosInChunkAtScreen(final int x, final int z) {
@@ -153,7 +148,9 @@ public class MapViewer extends JComponent {
         })) {
             final MapReader r = new MapReader(f);
             for (final Pair p : r.getChunks()) {
-                chunks.add(new Chunk(r.read(p.x, p.z), f));
+                final Chunk chunk = new Chunk(r.read(p.x, p.z), f);
+                final Pair pos = new Pair(chunk.getX(), chunk.getZ());
+                chunks.put(pos, chunk);
             }
         }
         repaint();
@@ -164,7 +161,7 @@ public class MapViewer extends JComponent {
         super.paint(gfx);
         final Graphics2D g = (Graphics2D) gfx;
         g.translate(-offX, -offZ);
-        for (final Chunk c : chunks) {
+        for (final Chunk c : chunks.values()) {
             final double x = c.getX() * scale;
             final double z = c.getZ() * scale;
             final Rectangle2D rect = new Rectangle2D.Double(x, z, 16 * scale,
