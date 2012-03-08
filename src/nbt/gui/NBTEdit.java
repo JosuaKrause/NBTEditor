@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -13,6 +14,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JTree;
@@ -21,9 +23,12 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import nbt.read.MapReader;
+import nbt.read.MapReader.Pair;
 import nbt.read.NBTReader;
 import nbt.record.NBTRecord;
 import nbt.write.NBTWriter;
+import net.minecraft.world.level.chunk.storage.RegionFile;
 
 public class NBTEdit extends JPanel {
 
@@ -38,6 +43,10 @@ public class NBTEdit extends JPanel {
     private NBTRecord cur;
 
     private File file;
+
+    private boolean wrapZip;
+
+    private boolean canSave;
 
     public NBTEdit(final JTree tree, final NBTFrame frame) {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -91,9 +100,32 @@ public class NBTEdit extends JPanel {
                 NBTReader read = null;
                 NBTRecord r = null;
                 try {
-                    read = new NBTReader(file);
-                    r = read.read();
+                    if (hasExtension(file, RegionFile.ANVIL_EXTENSION,
+                            RegionFile.MCREGION_EXTENSION)) {
+                        final MapReader mr = new MapReader(file);
+                        final List<Pair> coords = mr.getChunks();
+                        final Pair chunk = (Pair) JOptionPane.showInputDialog(
+                                frame, "Choose the chunk to display",
+                                "Choose chunk", JOptionPane.PLAIN_MESSAGE,
+                                null, coords.toArray(), null);
+                        r = chunk != null ? mr.read(chunk.x, chunk.z) : null;
+                        read = null;
+                        wrapZip = false;
+                        canSave = false;
+                    } else {
+                        read = new NBTReader(file);
+                        r = read.read();
+                        wrapZip = true;
+                        canSave = true;
+                    }
                 } catch (final IOException e) {
+                    // try {
+                    // read = new NBTReader(file, false);
+                    // r = read.read();
+                    // wrapZip = false;
+                    // } catch (final IOException ie) {
+                    // ie.printStackTrace();
+                    // }
                     e.printStackTrace();
                 } finally {
                     if (read != null) {
@@ -117,7 +149,7 @@ public class NBTEdit extends JPanel {
 
             @Override
             public void actionPerformed(final ActionEvent ae) {
-                if (file == null) {
+                if (file == null || !canSave) {
                     return;
                 }
                 final NBTRecord r = (NBTRecord) tree.getModel().getRoot();
@@ -125,7 +157,7 @@ public class NBTEdit extends JPanel {
                     return;
                 }
                 try {
-                    final NBTWriter write = new NBTWriter(file);
+                    final NBTWriter write = new NBTWriter(file, wrapZip);
                     write.write(r);
                     write.close();
                 } catch (final IOException e) {
@@ -159,4 +191,15 @@ public class NBTEdit extends JPanel {
 
         });
     }
+
+    private static boolean hasExtension(final File file, final String... ext) {
+        final String name = file.getName();
+        for (final String e : ext) {
+            if (name.endsWith(e)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

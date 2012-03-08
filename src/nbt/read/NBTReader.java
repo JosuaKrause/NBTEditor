@@ -13,7 +13,11 @@ import nbt.record.NBTType;
 public class NBTReader extends PushBackReader {
 
     public NBTReader(final File file) throws IOException {
-        this(new BufferedInputStream(new FileInputStream(file)), true);
+        this(file, true);
+    }
+
+    public NBTReader(final File file, final boolean wrapZip) throws IOException {
+        this(new BufferedInputStream(new FileInputStream(file)), wrapZip);
     }
 
     public NBTReader(final InputStream is, final boolean wrapZip)
