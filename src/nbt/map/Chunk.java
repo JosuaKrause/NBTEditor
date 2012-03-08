@@ -1,18 +1,23 @@
 package nbt.map;
 
 import java.awt.Color;
+import java.io.File;
 
 import nbt.record.NBTByteArray;
 import nbt.record.NBTCompound;
 import nbt.record.NBTList;
 import nbt.record.NBTNumeric;
 import nbt.record.NBTRecord;
+import net.minecraft.world.level.chunk.storage.RegionFile;
 
 public class Chunk {
 
     private final NBTCompound level;
 
-    public Chunk(final NBTRecord root) {
+    public Chunk(final NBTRecord root, final File file) {
+        if (!file.getName().endsWith(RegionFile.ANVIL_EXTENSION)) {
+            throw new IllegalArgumentException(file + " not in anvil format!");
+        }
         level = (NBTCompound) ((NBTCompound) root).get("Level");
     }
 
@@ -53,7 +58,9 @@ public class Chunk {
         }
         final int pos = getBlockPositionInSection(x, y, z);
         final NBTByteArray blocks = (NBTByteArray) section.get("Blocks");
-        return blocks.getAt(pos);
+        final NBTByteArray addBlocks = (NBTByteArray) section.get("AddBlocks");
+        return blocks.getAt(pos)
+                + (addBlocks != null ? (addBlocks.getAt(pos) << 8) : 0);
     }
 
     public int getBlockFor(final int x, final int y, final int z) {
@@ -96,6 +103,22 @@ public class Chunk {
         final double g = old.getGreen() * (1.0 - a) + add.getGreen() * a;
         final double b = old.getBlue() * (1.0 - a) + add.getBlue() * a;
         return new Color((int) r, (int) g, (int) b);
+    }
+
+    public int getXPos() {
+        return ((NBTNumeric) level.get("xPos")).getPayload().intValue();
+    }
+
+    public int getZPos() {
+        return ((NBTNumeric) level.get("zPos")).getPayload().intValue();
+    }
+
+    public int getX() {
+        return getXPos() * 16;
+    }
+
+    public int getZ() {
+        return getZPos() * 16;
     }
 
 }

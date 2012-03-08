@@ -11,7 +11,7 @@ import net.minecraft.world.level.chunk.storage.RegionFile;
 
 public class MapReader {
 
-    public class Pair {
+    public static final class Pair {
         public final int x;
         public final int z;
 
@@ -23,6 +23,17 @@ public class MapReader {
         @Override
         public String toString() {
             return "x: " + x + " z: " + z;
+        }
+
+        @Override
+        public int hashCode() {
+            return x * 31 + z;
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            final Pair p = (Pair) obj;
+            return p.x == x && p.z == z;
         }
     }
 

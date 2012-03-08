@@ -15,6 +15,8 @@ public class NBTFrame extends JFrame {
 
     private static final long serialVersionUID = -2257586634651534207L;
 
+    private JFrame frame;
+
     public NBTFrame() {
         setTitle(null, false);
         setPreferredSize(new Dimension(800, 600));
@@ -32,6 +34,22 @@ public class NBTFrame extends JFrame {
     public void setTitle(final File file, final boolean changed) {
         setTitle("NBTEdit: " + (changed ? "*" : "")
                 + (file != null ? file.toString() : "-"));
+    }
+
+    public void setAdditionalFrame(final JFrame newFrame) {
+        if (frame != null) {
+            final JFrame f = frame;
+            frame = null;
+            f.setVisible(false);
+            f.dispose();
+        }
+        frame = newFrame;
+    }
+
+    @Override
+    public void dispose() {
+        setAdditionalFrame(null);
+        super.dispose();
     }
 
 }

@@ -110,9 +110,12 @@ public class NBTEdit extends JPanel {
                                 "Choose chunk", JOptionPane.PLAIN_MESSAGE,
                                 null, coords.toArray(), null);
                         r = chunk != null ? mr.read(chunk.x, chunk.z) : null;
-                        final Chunk c = new Chunk(r);
-                        new ChunkFrame(8.0, c, frame);
-                        read = null;
+                        if (r != null
+                                && hasExtension(file,
+                                        RegionFile.ANVIL_EXTENSION)) {
+                            final Chunk c = new Chunk(r, file);
+                            new ChunkFrame(8.0, c, frame);
+                        }
                         wrapZip = false;
                         canSave = false;
                     } else {
@@ -122,6 +125,7 @@ public class NBTEdit extends JPanel {
                         canSave = true;
                     }
                 } catch (final IOException e) {
+                    // do not do this!
                     // try {
                     // read = new NBTReader(file, false);
                     // r = read.read();
@@ -195,7 +199,7 @@ public class NBTEdit extends JPanel {
         });
     }
 
-    private static boolean hasExtension(final File file, final String... ext) {
+    public static boolean hasExtension(final File file, final String... ext) {
         final String name = file.getName();
         for (final String e : ext) {
             if (name.endsWith(e)) {

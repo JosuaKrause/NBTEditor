@@ -10,6 +10,7 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.WindowConstants;
 
 import nbt.map.Chunk;
 
@@ -32,7 +33,7 @@ public class ChunkFrame extends JFrame {
         pack();
         setLocationRelativeTo(parent);
         setVisible(true);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     }
 
     protected Dimension getAssumedSize() {
