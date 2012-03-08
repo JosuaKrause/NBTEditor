@@ -23,6 +23,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import nbt.map.Chunk;
 import nbt.read.MapReader;
 import nbt.read.MapReader.Pair;
 import nbt.read.NBTReader;
@@ -109,6 +110,8 @@ public class NBTEdit extends JPanel {
                                 "Choose chunk", JOptionPane.PLAIN_MESSAGE,
                                 null, coords.toArray(), null);
                         r = chunk != null ? mr.read(chunk.x, chunk.z) : null;
+                        final Chunk c = new Chunk(r);
+                        new ChunkFrame(8.0, c, frame);
                         read = null;
                         wrapZip = false;
                         canSave = false;
