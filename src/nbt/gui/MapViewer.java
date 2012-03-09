@@ -197,50 +197,18 @@ public class MapViewer extends JComponent {
             }
 
         });
-        final double size = files.length;
-        double i = 0;
         for (final File f : files) {
             final MapReader r = new MapReader(f);
             final List<Pair> chunkList = r.getChunks();
-            final double sizeInner = chunkList.size();
-            double j = 0;
             for (final Pair p : chunkList) {
                 if(t != iniLoader || t.isInterrupted()) {
                     return;
                 }
-                try {
-                    checkHeapStatus();
-                    final Chunk chunk = new Chunk(r.read(p.x, p.z), f, p);
-                    synchronized (chunks) {
-                        chunks.put(chunk.getPos(), chunk);
-                    }
-                    synchronized (mayUnload) {                        
-                        mayUnload.add(chunk);
-                    }
-                } catch (final OutOfMemoryError e) {
-                    boolean canUnload;
-                    synchronized (mayUnload) {
-                        canUnload = !mayUnload.isEmpty();
-                    }
-                    if (canUnload) {
-                        beFriendly = false;
-                        handleFullMemory();
-                    } else if(e.getMessage().equals(TOKEN)) {
-                        beFriendly = true;
-                    } else {
-                        throw new Error(e);
-                    }
-                    continue;
-                }
-                ++j;
-                final double perc = (i + j / sizeInner) / size * 100;
-                System.out.println("loading " + perc + "%");
+                final Chunk chunk = new Chunk(r.read(p.x, p.z), f, p);
+                unloadChunk(chunk);
             }
             repaint();
-            ++i;
         }
-        repaint();
-        System.out.println("loading finished...");
     }
 
     private static Pair[] asArrayPair(final Collection<Pair> entries) {
@@ -316,12 +284,12 @@ public class MapViewer extends JComponent {
             // exception
             final Chunk c;
             synchronized (mayUnload) {
-            final Iterator<Chunk> it = mayUnload.iterator();
-            if (!it.hasNext()) {
-                break;
-            }
-            c= it.next();
-            it.remove();
+                final Iterator<Chunk> it = mayUnload.iterator();
+                if (!it.hasNext()) {
+                    break;
+                }
+                c= it.next();
+                it.remove();
             }
             unloadChunk(c);
         }
