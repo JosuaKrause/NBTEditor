@@ -34,7 +34,7 @@ public enum Blocks {
 
     GRAVEL(13, Color.GRAY),
 
-    GOLD_ORE(14, new Color(0x8000ffff, true)),
+    GOLD_ORE(14, new Color(0x80ffff00, true)),
 
     IRON_ORE(15, new Color(0x80a0a0a0, true)),
 
@@ -54,7 +54,7 @@ public enum Blocks {
 
     DISPENSER(23, Color.DARK_GRAY),
 
-    SANDSTONE(24, new Color(0x40ffff)),
+    SANDSTONE(24, new Color(0xffff40)),
 
     NOTE(25, new Color(0x80964B00, true)),
 
@@ -80,7 +80,7 @@ public enum Blocks {
 
     TECHNICAL_BLOCK(36, new Color(0, true)),
 
-    DANDELION(37, new Color(0x4000ffff, true)),
+    DANDELION(37, new Color(0x40ffff00, true)),
 
     ROSE(38, new Color(0x40ff0000, true)),
 
@@ -124,7 +124,7 @@ public enum Blocks {
 
     CRAFTING(58, new Color(0x964B00).brighter()),
 
-    CROPS(59, new Color(0x8000ffff, true)),
+    CROPS(59, new Color(0x80ffff00, true)),
 
     FARMLAND(60, new Color(0x964B00).darker()),
 
@@ -162,61 +162,99 @@ public enum Blocks {
 
     BUTTON(77, new Color(0x40a0a0a0, true)),
 
-    SNOW(78, new Color(0xc0ffffff, true)),
+    SNOW(78, new Color(0xd0ffffff, true)),
 
-    ICE(79, Color.CYAN),
+    ICE(79, new Color(0xc000ffff, true)),
 
     SNOW_BLOCK(80, Color.WHITE),
 
-    // Cactus.png 81 51 Cactus D
-    // Clay (Block).png 82 52 Clay Block
-    // Sugar Cane.png 83 53 Sugar Cane D I
-    // Jukebox.png 84 54 Jukebox D T
-    // Fence.png 85 55 Fence
-    // Pumpkin.png 86 56 Pumpkin D
-    // Netherrack.png 87 57 Netherrack
-    // Soul Sand.png 88 58 Soul Sand
-    // Glowstone (Block).png 89 59 Glowstone Block
-    // Portal.png 90 5A Portal
-    // Jack-O-Lantern.png 91 5B Jack-O-Lantern D
-    // Cake.png 92 5C Cake Block D I
-    // Redstone (Repeater, Inactive).png 93 5D Redstone Repeater ("off" state) D
-    // I
-    // Redstone (Repeater, Active).png 94 5E Redstone Repeater ("on" state) D I
-    // Locked Chest.png 95 5F Locked Chest
-    // Trapdoor.png 96 60 Trapdoor D
-    // Stone.png 97 61 Hidden Silverfish D
-    // Stone Brick.png 98 62 Stone Bricks D B
-    // Huge Brown Mushroom.png 99 63 Huge Brown Mushroom D
-    // Huge Red Mushroom.png 100 64 Huge Red Mushroom D
-    // Iron Bars.png 101 65 Iron Bars
-    // Glass Pane.png 102 66 Glass Pane
-    // Melon (Block).png 103 67 Melon
-    // Seed Stem.png 104 68 Pumpkin Stem D
-    // Seed Stem.png 105 69 Melon Stem D
+    CACTUS(81, new Color(0x00d000)),
+
+    CLAY(82, Color.LIGHT_GRAY),
+
+    CANE(83, new Color(0xd060ff60, true)),
+
+    JUKEBOX(84, new Color(0x80964B00, true)),
+
+    FENCE(85, new Color(0x80964B00, true).brighter().brighter()),
+
+    PUMPKIN(86, new Color(0xffa400)),
+
+    NETHERRACK(87, new Color(0xe080a0)),
+
+    SOULSAND(88, new Color(0x9080a0)),
+
+    GLOWSTONE(89, new Color(0xffff80)),
+
+    PORTAL(90, new Color(0x40800080, true)),
+
+    PUMPKIN_LIGHT(91, new Color(0xffc440)),
+
+    CAKE(92, new Color(0x80ffa400, true)),
+
+    REDSTONE_REP(93, new Color(0x70ff0000, true)),
+
+    REDSTONE_REP_ON(94, new Color(0x80ff0000, true)),
+
+    CHEST_LOCKED(95, new Color(0x964B00).brighter().brighter()),
+
+    TRAP(96, new Color(0x80964B00, true).brighter().brighter()),
+
+    STONE_SILVERFISH(97, Color.LIGHT_GRAY),
+
+    STONE_BRICK(98, Color.GRAY),
+
+    MUSHROOM_BROWN_HUGE(99, new Color(0x964B00).brighter()),
+
+    MUSHROOM_RED_HUGE(100, new Color(0xff8080)),
+
+    IRON_BAR(101, new Color(0x80a0a0a0, true).brighter().brighter()),
+
+    GLASS_PANE(102, new Color(0x20ffffff, true)),
+
+    MELON(103, new Color(0x29ff29)),
+
+    STEM_PUMPKIN(104, new Color(0x008070)),
+
+    STEM_MELON(105, new Color(0x008070)),
 
     VINE(106, new Color(0x80008000, true)),
 
-    // Fence Gate (Closed).png 107 6B Fence Gate D
-    // Brick Stairs.png 108 6C Brick Stairs D
-    // Stone Brick Stairs.png 109 6D Stone Brick Stairs D
-    // Mycelium.png 110 6E Mycelium
+    FENCE_GATE(107, new Color(0x80964B00, true).brighter().brighter()),
+
+    BRICK_STAIRS(108, new Color(0xd64B00, false).darker()),
+
+    STONE_BRICK_STAIRS(109, Color.GRAY),
+
+    MYCELLIUM(110, new Color(0x964B00)),
 
     LILY_PAD(111, new Color(0x80008000, true)),
 
-    // Nether Brick.png 112 70 Nether Brick
-    // Nether Brick Fence.png 113 71 Nether Brick Fence
-    // Nether Brick Stairs.png 114 72 Nether Brick Stairs D
-    // Nether Wart.png 115 73 Nether Wart D I
-    // Enchantment Table.png 116 74 Enchantment Table T
-    // Brewing Stand.png 117 75 Brewing Stand D T I
-    // Cauldron.png 118 76 Cauldron D I
-    // End Portal.png 119 77 End Portal T
-    // End Portal Frame.png 120 78 End Portal Frame D
-    // End Stone.png 121 79 End Stone
-    // Dragon Egg.png 122 7A Dragon Egg
-    // Redstone Lamp.png 123 7B Redstone Lamp (inactive)
-    // Redstone Lamp (Active).png 124 7C Redstone Lamp (active)
+    NETHER_BRICK(112, new Color(0x600000)),
+
+    NETHER_BRICK_FENCE(113, new Color(0x80600000, true)),
+
+    NETHER_BRICK_STAIRS(114, new Color(0x600000)),
+
+    NETHER_WART(115, new Color(0x80800045, true)),
+
+    ENCHANTMENT(116, new Color(0x8000d0d0, true)),
+    
+    BREWING(117, new Color(0x80d00000, true)),
+    
+    CAULDRON(118, new Color(0x80707070, true)),
+    
+    PORTAL_END(119, new Color(0x80000000, true)),
+
+    PORTAL_END_FRAME(120, new Color(0x00d0d0)),
+    
+    STONE_END(121, new Color(0xa0a070)),
+
+    DRAGON_EGG(122, new Color(0x80202020, true)),
+
+    REDSTONE_LAMP(123, new Color(0x408080)),
+
+    REDSTONE_LAMP_ON(124, new Color(0x40ffff)),
 
     DEFAULT_UNASSIGNED(-1, Color.MAGENTA),
 
