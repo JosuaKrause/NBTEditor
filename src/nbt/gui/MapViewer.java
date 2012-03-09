@@ -162,8 +162,29 @@ public class MapViewer extends JComponent {
         }
         repaint();
     }
-
+    
+    private Thread iniLoader;
+    
     public void setFolder(final File folder) {
+        if(iniLoader != null) {
+            synchronized (iniLoader) {
+                iniLoader.interrupt();
+                iniLoader = null;
+            }
+        }
+        iniLoader = new Thread() {
+            
+            @Override
+            public void run() {
+                setFolder0(folder, this);
+            }
+            
+        };
+        iniLoader.setDaemon(true);
+        iniLoader.start();
+    }
+
+    private void setFolder0(final File folder, final Thread t) {
         synchronized (chunks) {            
             chunks.clear();
         }
@@ -184,11 +205,14 @@ public class MapViewer extends JComponent {
             final double sizeInner = chunkList.size();
             double j = 0;
             for (final Pair p : chunkList) {
+                if(t != iniLoader || t.isInterrupted()) {
+                    return;
+                }
                 try {
                     checkHeapStatus();
                     final Chunk chunk = new Chunk(r.read(p.x, p.z), f, p);
                     synchronized (chunks) {
-                    chunks.put(chunk.getPos(), chunk);
+                        chunks.put(chunk.getPos(), chunk);
                     }
                     synchronized (mayUnload) {                        
                         mayUnload.add(chunk);
@@ -199,15 +223,20 @@ public class MapViewer extends JComponent {
                         canUnload = !mayUnload.isEmpty();
                     }
                     if (canUnload) {
+                        beFriendly = false;
                         handleFullMemory();
+                    } else if(e.getMessage().equals(TOKEN)) {
+                        beFriendly = true;
                     } else {
                         throw new Error(e);
                     }
+                    continue;
                 }
                 ++j;
                 final double perc = (i + j / sizeInner) / size * 100;
                 System.out.println("loading " + perc + "%");
             }
+            repaint();
             ++i;
         }
         repaint();
@@ -327,13 +356,20 @@ public class MapViewer extends JComponent {
     
     public static final double MEM_RATIO = 0.2;
     
+    private static final String TOKEN = "nope";
+    
+    private static volatile boolean beFriendly;
+    
     private static void checkHeapStatus() {
+        if(beFriendly) {
+            return;
+        }
         final Runtime r = Runtime.getRuntime();
         final long free = r.freeMemory();
         final long max = r.maxMemory();
         final double ratio = (double) free / (double) max;
-        if(ratio <= 0.2) {
-            throw new OutOfMemoryError();
+        if(ratio <= MEM_RATIO) {
+            throw new OutOfMemoryError(TOKEN);
         }
     }
 
@@ -371,7 +407,10 @@ public class MapViewer extends JComponent {
                     canUnload = !mayUnload.isEmpty();
                 }
                 if (canUnload) {
+                    beFriendly = false;
                     handleFullMemory();
+                } else if(e.getMessage().equals(TOKEN)) {
+                    beFriendly = true;
                 } else {
                     throw new Error(e);
                 }
