@@ -11,7 +11,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -116,10 +118,12 @@ public class MapViewer extends JComponent {
         addMouseListener(mouse);
         addMouseMotionListener(mouse);
         setBackground(Color.BLACK);
-        final BufferedImage loading = new BufferedImage((int)(scale*16), (int)(scale*16), BufferedImage.TYPE_INT_RGB);
-        final Graphics2D g =(Graphics2D) loading.getGraphics();
+        final BufferedImage loading = new BufferedImage((int) (scale * 16),
+                (int) (scale * 16), BufferedImage.TYPE_INT_RGB);
+        final Graphics2D g = (Graphics2D) loading.getGraphics();
         g.setColor(new Color(0x404040));
-        final Rectangle r = new Rectangle(loading.getWidth(), loading.getHeight());
+        final Rectangle r = new Rectangle(loading.getWidth(),
+                loading.getHeight());
         g.fill(r);
         g.dispose();
         this.loading = loading;
@@ -129,8 +133,8 @@ public class MapViewer extends JComponent {
         final int cx = (int) ((offX + x) / scale) / 16 - (offX + x < 0 ? 1 : 0);
         final int cz = (int) ((offZ + z) / scale) / 16 - (offZ + z < 0 ? 1 : 0);
         Chunk c;
-        synchronized (chunks) {            
-            c=chunks.get(new Pair(cx * 16, cz * 16));
+        synchronized (chunks) {
+            c = chunks.get(new Pair(cx * 16, cz * 16));
         }
         return c;
     }
@@ -162,30 +166,30 @@ public class MapViewer extends JComponent {
         }
         repaint();
     }
-    
+
     private Thread iniLoader;
-    
+
     public void setFolder(final File folder) {
-        if(iniLoader != null) {
+        if (iniLoader != null) {
             synchronized (iniLoader) {
                 iniLoader.interrupt();
                 iniLoader = null;
             }
         }
         iniLoader = new Thread() {
-            
+
             @Override
             public void run() {
                 setFolder0(folder, this);
             }
-            
+
         };
         iniLoader.setDaemon(true);
         iniLoader.start();
     }
 
     private void setFolder0(final File folder, final Thread t) {
-        synchronized (chunks) {            
+        synchronized (chunks) {
             chunks.clear();
         }
         final File[] files = folder.listFiles(new FileFilter() {
@@ -197,11 +201,21 @@ public class MapViewer extends JComponent {
             }
 
         });
+        Arrays.sort(files, new Comparator<File>() {
+
+            @Override
+            public int compare(final File left, final File right) {
+                final String leftStr = left.getName().replace("-", "");
+                final String rightStr = right.getName().replace("-", "");
+                return leftStr.compareTo(rightStr);
+            }
+
+        });
         for (final File f : files) {
             final MapReader r = new MapReader(f);
             final List<Pair> chunkList = r.getChunks();
             for (final Pair p : chunkList) {
-                if(t != iniLoader || t.isInterrupted()) {
+                if (t != iniLoader || t.isInterrupted()) {
                     return;
                 }
                 final Chunk chunk = new Chunk(r.read(p.x, p.z), f, p);
@@ -224,12 +238,12 @@ public class MapViewer extends JComponent {
         g.fill(r);
         g.translate(-offX, -offZ);
         final Pair[] reloadEntries;
-        synchronized (reload) {            
+        synchronized (reload) {
             reloadEntries = asArrayPair(reload.keySet());
         }
         for (final Pair pos : reloadEntries) {
             if (isValidPos(g, pos)) {
-                synchronized (chunksToReload) {                
+                synchronized (chunksToReload) {
                     chunksToReload.add(pos);
                 }
                 synchronized (reloader) {
@@ -243,19 +257,19 @@ public class MapViewer extends JComponent {
         }
         for (final Pair pos : chunksEntries) {
             final Chunk c;
-            synchronized (chunks) {                
+            synchronized (chunks) {
                 c = chunks.get(pos);
             }
             if (!isValidPos(g, pos)) {
-                if(c != null) {
-                    synchronized (mayUnload) {                        
+                if (c != null) {
+                    synchronized (mayUnload) {
                         mayUnload.add(c);
                     }
                 }
                 continue;
             }
-            if(c != null) {
-                synchronized (mayUnload) {                    
+            if (c != null) {
+                synchronized (mayUnload) {
                     mayUnload.remove(c);
                 }
             }
@@ -288,7 +302,7 @@ public class MapViewer extends JComponent {
                 if (!it.hasNext()) {
                     break;
                 }
-                c= it.next();
+                c = it.next();
                 it.remove();
             }
             unloadChunk(c);
@@ -298,7 +312,7 @@ public class MapViewer extends JComponent {
 
     protected void unloadChunk(final Chunk chunk) {
         final Image img;
-        synchronized (imgCache) {            
+        synchronized (imgCache) {
             img = imgCache.remove(chunk);
         }
         if (img != null) {
@@ -308,35 +322,35 @@ public class MapViewer extends JComponent {
             selChunk = null;
         }
         final Pair pos = chunk.getPos();
-        synchronized (chunks) {            
+        synchronized (chunks) {
             chunks.remove(pos);
         }
-        synchronized (reload) {            
+        synchronized (reload) {
             reload.put(pos, chunk.getFile());
         }
         synchronized (otherPos) {
             otherPos.put(pos, chunk.getOtherPos());
         }
-        synchronized (mayUnload) {            
+        synchronized (mayUnload) {
             mayUnload.remove(chunk);
         }
     }
-    
+
     public static final double MEM_RATIO = 0.2;
-    
+
     private static final String TOKEN = "nope";
-    
+
     private static volatile boolean beFriendly;
-    
+
     private static void checkHeapStatus() {
-        if(beFriendly) {
+        if (beFriendly) {
             return;
         }
         final Runtime r = Runtime.getRuntime();
         final long free = r.freeMemory();
         final long max = r.maxMemory();
         final double ratio = (double) free / (double) max;
-        if(ratio <= MEM_RATIO) {
+        if (ratio <= MEM_RATIO) {
             throw new OutOfMemoryError(TOKEN);
         }
     }
@@ -347,25 +361,25 @@ public class MapViewer extends JComponent {
             try {
                 checkHeapStatus();
                 final File f;
-                synchronized (reload) {                    
+                synchronized (reload) {
                     f = reload.get(pos);
                 }
-                if(f == null) {
+                if (f == null) {
                     return;
                 }
                 final Pair op;
-                synchronized (otherPos) {                    
+                synchronized (otherPos) {
                     op = otherPos.get(pos);
                 }
                 final MapReader r = new MapReader(f);
                 final Chunk chunk = new Chunk(r.read(op.x, op.z), f, op);
-                synchronized (chunks) {                    
+                synchronized (chunks) {
                     chunks.put(pos, chunk);
                 }
-                synchronized (reload) {                    
+                synchronized (reload) {
                     reload.remove(pos);
                 }
-                synchronized (otherPos) {                    
+                synchronized (otherPos) {
                     otherPos.remove(pos);
                 }
                 end = true;
@@ -377,7 +391,7 @@ public class MapViewer extends JComponent {
                 if (canUnload) {
                     beFriendly = false;
                     handleFullMemory();
-                } else if(e.getMessage().equals(TOKEN)) {
+                } else if (e.getMessage().equals(TOKEN)) {
                     beFriendly = true;
                 } else {
                     throw new Error(e);
@@ -385,17 +399,17 @@ public class MapViewer extends JComponent {
             }
         } while (!end);
     }
-    
+
     private final Image loading;
-    
+
     private final Set<Chunk> chunksToDraw = new HashSet<Chunk>();
-    
+
     private final Set<Pair> chunksToReload = new HashSet<Pair>();
 
     private final Map<Chunk, Image> imgCache = new HashMap<Chunk, Image>();
 
     private void drawChunk(final Graphics2D g, final Chunk chunk) {
-        if(chunk == null) {
+        if (chunk == null) {
             g.drawImage(loading, 0, 0, this);
             return;
         }
@@ -407,7 +421,7 @@ public class MapViewer extends JComponent {
             synchronized (imgCache) {
                 imgCache.put(chunk, loading);
             }
-            synchronized (chunksToDraw) {                
+            synchronized (chunksToDraw) {
                 chunksToDraw.add(chunk);
             }
             synchronized (drawer) {
@@ -426,100 +440,100 @@ public class MapViewer extends JComponent {
             g.fill(rect);
         }
     }
-    
+
     private final Thread reloader = new Thread() {
-        
+
         @Override
         public void run() {
             try {
-                while(!isInterrupted()) {
+                while (!isInterrupted()) {
                     Pair p;
-                    for(;;) {
-                        boolean b; 
-                    synchronized (chunksToReload) {
-                        b = chunksToReload.isEmpty();
-                    }
-                    if(!b) {
-                        break;
-                    }
-                    synchronized (reloader) {
-                        wait();
-                    }
+                    for (;;) {
+                        boolean b;
+                        synchronized (chunksToReload) {
+                            b = chunksToReload.isEmpty();
+                        }
+                        if (!b) {
+                            break;
+                        }
+                        synchronized (reloader) {
+                            wait();
+                        }
                     }
                     synchronized (chunksToReload) {
                         final Iterator<Pair> it = chunksToReload.iterator();
                         p = it.next();
-                        it.remove();                        
+                        it.remove();
                     }
                     reloadChunk(p);
                     repaint();
                 }
-            } catch(final InterruptedException e) {
-                interrupt();
-            }
-        }
-        
-    };
-    
-    {
-        reloader.setDaemon(true);
-        reloader.start();
-    }
-    
-    private final Thread drawer = new Thread() {
-        
-        @Override
-        public void run() {
-            try {
-                while(!isInterrupted()) {
-                    Chunk c;
-                    for(;;) {
-                        boolean b; 
-                    synchronized (chunksToDraw) {
-                        b = chunksToDraw.isEmpty();
-                    }
-                    if(!b) {
-                        break;
-                    }
-                    synchronized (drawer) {
-                        wait();
-                    }
-                    }
-                    synchronized (chunksToDraw) {
-                        final Iterator<Chunk> it = chunksToDraw.iterator();
-                        c = it.next();
-                        it.remove();                        
-                    }
-                    drawChunk0(c);
-                    repaint();
-                }
-            } catch(final InterruptedException e) {
+            } catch (final InterruptedException e) {
                 interrupt();
             }
         }
 
     };
-    
+
+    {
+        reloader.setDaemon(true);
+        reloader.start();
+    }
+
+    private final Thread drawer = new Thread() {
+
+        @Override
+        public void run() {
+            try {
+                while (!isInterrupted()) {
+                    Chunk c;
+                    for (;;) {
+                        boolean b;
+                        synchronized (chunksToDraw) {
+                            b = chunksToDraw.isEmpty();
+                        }
+                        if (!b) {
+                            break;
+                        }
+                        synchronized (drawer) {
+                            wait();
+                        }
+                    }
+                    synchronized (chunksToDraw) {
+                        final Iterator<Chunk> it = chunksToDraw.iterator();
+                        c = it.next();
+                        it.remove();
+                    }
+                    drawChunk0(c);
+                    repaint();
+                }
+            } catch (final InterruptedException e) {
+                interrupt();
+            }
+        }
+
+    };
+
     {
         drawer.setDaemon(true);
         drawer.start();
     }
-    
+
     private void drawChunk0(final Chunk chunk) {
         final BufferedImage img = new BufferedImage((int) (scale * 16),
                 (int) (scale * 16), BufferedImage.TYPE_INT_RGB);
         final Graphics2D gi = (Graphics2D) img.getGraphics();
         for (int x = 0; x < 16; ++x) {
             for (int z = 0; z < 16; ++z) {
-                final Rectangle2D rect = new Rectangle2D.Double(x * scale,
-                        z * scale, scale, scale);
+                final Rectangle2D rect = new Rectangle2D.Double(x * scale, z
+                        * scale, scale, scale);
                 gi.setColor(chunk.getColorForColumn(x, z));
                 gi.fill(rect);
             }
         }
         gi.dispose();
-        synchronized (imgCache) {            
-            if(imgCache.containsKey(chunk)) {
+        synchronized (imgCache) {
+            if (imgCache.containsKey(chunk)) {
                 imgCache.put(chunk, img);
             }
         }
