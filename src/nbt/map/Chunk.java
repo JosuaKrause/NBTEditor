@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import nbt.read.MapReader.Pair;
 import nbt.record.NBTByteArray;
 import nbt.record.NBTCompound;
 import nbt.record.NBTList;
@@ -16,15 +17,33 @@ public class Chunk {
 
     private final NBTCompound level;
 
-    public Chunk(final NBTRecord root, final File file) {
+    private final File file;
+
+    private final Pair otherPos;
+
+    public Chunk(final NBTRecord root, final File file, final Pair otherPos) {
         if (!file.getName().endsWith(RegionFile.ANVIL_EXTENSION)) {
             throw new IllegalArgumentException(file + " not in anvil format!");
         }
+        this.otherPos = otherPos;
+        this.file = file;
         level = (NBTCompound) ((NBTCompound) root).get("Level");
         xCache = ((NBTNumeric) level.get("xPos")).getPayload().intValue();
         zCache = ((NBTNumeric) level.get("zPos")).getPayload().intValue();
         biomes = (NBTByteArray) level.get("Biomes");
         sections = (NBTList) level.get("Sections");
+    }
+
+    public Pair getOtherPos() {
+        return otherPos;
+    }
+
+    public Pair getPos() {
+        return new Pair(getX(), getZ());
+    }
+
+    public File getFile() {
+        return file;
     }
 
     private final NBTByteArray biomes;
@@ -114,10 +133,19 @@ public class Chunk {
         return Biomes.getBlockForId(getBiomeFor(x, z));
     }
 
+    private boolean hasChanged;
+
     private final Color colors[][] = new Color[16][16];
 
     public void changeAt(final int x, final int z) {
         colors[x][z] = null;
+        hasChanged = true;
+    }
+
+    public boolean oneTimeHasChanged() {
+        final boolean hc = hasChanged;
+        hasChanged = false;
+        return hc;
     }
 
     public Color getColorForColumn(final int x, final int z) {

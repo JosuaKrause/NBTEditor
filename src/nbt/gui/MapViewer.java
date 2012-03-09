@@ -3,13 +3,18 @@ package nbt.gui;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JComponent;
 
@@ -24,6 +29,12 @@ public class MapViewer extends JComponent {
 
     private final Map<Pair, Chunk> chunks;
 
+    private final Map<Pair, File> reload;
+
+    private final Map<Pair, Pair> otherPos;
+
+    private final Set<Chunk> mayUnload;
+
     private int offX;
 
     private int offZ;
@@ -35,6 +46,9 @@ public class MapViewer extends JComponent {
     public MapViewer(final MapFrame frame, final double scale) {
         this.frame = frame;
         chunks = new HashMap<Pair, Chunk>();
+        reload = new HashMap<Pair, File>();
+        otherPos = new HashMap<Pair, Pair>();
+        mayUnload = new HashSet<Chunk>();
         this.scale = scale;
         final MouseAdapter mouse = new MouseAdapter() {
 
@@ -148,12 +162,28 @@ public class MapViewer extends JComponent {
         })) {
             final MapReader r = new MapReader(f);
             for (final Pair p : r.getChunks()) {
-                final Chunk chunk = new Chunk(r.read(p.x, p.z), f);
-                final Pair pos = new Pair(chunk.getX(), chunk.getZ());
-                chunks.put(pos, chunk);
+                try {
+                    final Chunk chunk = new Chunk(r.read(p.x, p.z), f, p);
+                    chunks.put(chunk.getPos(), chunk);
+                    mayUnload.add(chunk);
+                } catch (final OutOfMemoryError e) {
+                    if (!mayUnload.isEmpty()) {
+                        handleFullMemory();
+                    } else {
+                        throw new Error(e);
+                    }
+                }
             }
         }
         repaint();
+    }
+
+    private static Pair[] asArrayPair(final Collection<Pair> entries) {
+        return entries.toArray(new Pair[entries.size()]);
+    }
+
+    private static Chunk[] asArrayChunk(final Collection<Chunk> entries) {
+        return entries.toArray(new Chunk[entries.size()]);
     }
 
     @Override
@@ -161,15 +191,22 @@ public class MapViewer extends JComponent {
         super.paint(gfx);
         final Graphics2D g = (Graphics2D) gfx;
         g.translate(-offX, -offZ);
-        for (final Chunk c : chunks.values()) {
-            final double x = c.getX() * scale;
-            final double z = c.getZ() * scale;
-            final Rectangle2D rect = new Rectangle2D.Double(x, z, 16 * scale,
-                    16 * scale);
-            if (!g.hitClip((int) rect.getMinX() - 1, (int) rect.getMinY() - 1,
-                    (int) rect.getWidth() + 2, (int) rect.getHeight() + 2)) {
+        final Pair[] reloadEntries = asArrayPair(reload.keySet());
+        for (final Pair pos : reloadEntries) {
+            if (isValidPos(g, pos)) {
+                reloadChunk(pos);
+            }
+        }
+        final Pair[] chunksEntries = asArrayPair(chunks.keySet());
+        for (final Pair pos : chunksEntries) {
+            final Chunk c = chunks.get(pos);
+            if (!isValidPos(g, pos)) {
+                mayUnload.add(c);
                 continue;
             }
+            mayUnload.remove(c);
+            final double x = pos.x * scale;
+            final double z = pos.z * scale;
             final Graphics2D g2 = (Graphics2D) g.create();
             g2.translate(x, z);
             drawChunk(g2, c);
@@ -177,18 +214,78 @@ public class MapViewer extends JComponent {
         }
     }
 
-    private void drawChunk(final Graphics2D g, final Chunk chunk) {
-        for (int x = 0; x < 16; ++x) {
-            for (int z = 0; z < 16; ++z) {
-                final Rectangle2D rect = new Rectangle2D.Double(x * scale, z
-                        * scale, scale, scale);
-                if (selChunk == chunk && selPos.x == x && selPos.z == z) {
-                    g.setColor(Color.BLACK);
+    private boolean isValidPos(final Graphics2D g, final Pair pos) {
+        final double x = pos.x * scale;
+        final double z = pos.z * scale;
+        final Rectangle2D rect = new Rectangle2D.Double(x, z, 16 * scale,
+                16 * scale);
+        return g.hitClip((int) rect.getMinX() - 1, (int) rect.getMinY() - 1,
+                (int) rect.getWidth() + 2, (int) rect.getHeight() + 2);
+    }
+
+    private void handleFullMemory() {
+        System.err.println("full memory cleanup");
+        for (final Chunk c : asArrayChunk(mayUnload)) {
+            unloadChunk(c);
+        }
+    }
+
+    protected void unloadChunk(final Chunk chunk) {
+        imgCache.remove(chunk);
+        if (selChunk == chunk) {
+            selChunk = null;
+        }
+        final Pair pos = chunk.getPos();
+        chunks.remove(pos);
+        reload.put(pos, chunk.getFile());
+        otherPos.put(pos, chunk.getOtherPos());
+        mayUnload.remove(pos);
+    }
+
+    protected void reloadChunk(final Pair pos) {
+        boolean end = false;
+        do {
+            try {
+                final File f = reload.remove(pos);
+                final Pair op = otherPos.remove(pos);
+                final MapReader r = new MapReader(f);
+                final Chunk chunk = new Chunk(r.read(op.x, op.z), f, op);
+                chunks.put(pos, chunk);
+                end = true;
+            } catch (final OutOfMemoryError e) {
+                if (!mayUnload.isEmpty()) {
+                    handleFullMemory();
                 } else {
-                    g.setColor(chunk.getColorForColumn(x, z));
+                    throw new Error(e);
                 }
-                g.fill(rect);
             }
+        } while (!end);
+    }
+
+    private final Map<Chunk, Image> imgCache = new HashMap<Chunk, Image>();
+
+    private void drawChunk(final Graphics2D g, final Chunk chunk) {
+        if (chunk.oneTimeHasChanged() || !imgCache.containsKey(chunk)) {
+            final BufferedImage img = new BufferedImage((int) scale * 16,
+                    (int) scale * 16, BufferedImage.TYPE_INT_ARGB);
+            final Graphics2D gi = (Graphics2D) img.getGraphics();
+            for (int x = 0; x < 16; ++x) {
+                for (int z = 0; z < 16; ++z) {
+                    final Rectangle2D rect = new Rectangle2D.Double(x * scale,
+                            z * scale, scale, scale);
+                    gi.setColor(chunk.getColorForColumn(x, z));
+                    gi.fill(rect);
+                }
+            }
+            gi.dispose();
+            imgCache.put(chunk, img);
+        }
+        g.drawImage(imgCache.get(chunk), 0, 0, this);
+        if (selChunk == chunk) {
+            final Rectangle2D rect = new Rectangle2D.Double(selPos.x * scale,
+                    selPos.z * scale, scale, scale);
+            g.setColor(new Color(0x80000000, true));
+            g.fill(rect);
         }
     }
 

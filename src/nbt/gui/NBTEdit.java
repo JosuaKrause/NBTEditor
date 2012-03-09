@@ -113,7 +113,7 @@ public class NBTEdit extends JPanel {
                         if (r != null
                                 && hasExtension(file,
                                         RegionFile.ANVIL_EXTENSION)) {
-                            final Chunk c = new Chunk(r, file);
+                            final Chunk c = new Chunk(r, file, chunk);
                             new ChunkFrame(8.0, c, frame);
                         }
                         wrapZip = false;
