@@ -13,6 +13,7 @@ import java.io.FileFilter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -138,7 +139,7 @@ public class MapViewer extends JComponent {
         selPos = getPosInChunkAtScreen(x, z);
         if (selChunk != null) {
             final String tt = "x:" + (selPos.x + selChunk.getX()) + " z:"
-                    + (selPos.z + selChunk.getZ()) + " b:"
+                    + (selPos.z + selChunk.getZ()) + " b: "
                     + selChunk.getBiome(selPos.x, selPos.z).name;
             frame.setTitleText(tt);
             setToolTipText(tt);
@@ -176,14 +177,11 @@ public class MapViewer extends JComponent {
             }
         }
         repaint();
+        System.out.println("loading finished...");
     }
 
     private static Pair[] asArrayPair(final Collection<Pair> entries) {
         return entries.toArray(new Pair[entries.size()]);
-    }
-
-    private static Chunk[] asArrayChunk(final Collection<Chunk> entries) {
-        return entries.toArray(new Chunk[entries.size()]);
     }
 
     @Override
@@ -225,13 +223,22 @@ public class MapViewer extends JComponent {
 
     private void handleFullMemory() {
         System.err.println("full memory cleanup");
-        for (final Chunk c : asArrayChunk(mayUnload)) {
+        for (;;) {
+            // allocating no more memory but avoiding concurrent modification
+            // exception
+            final Iterator<Chunk> it = mayUnload.iterator();
+            if (!it.hasNext()) {
+                break;
+            }
+            final Chunk c = it.next();
+            it.remove();
             unloadChunk(c);
         }
+        System.gc();
     }
 
     protected void unloadChunk(final Chunk chunk) {
-        imgCache.remove(chunk);
+        imgCache.remove(chunk).flush();
         if (selChunk == chunk) {
             selChunk = null;
         }
@@ -239,18 +246,20 @@ public class MapViewer extends JComponent {
         chunks.remove(pos);
         reload.put(pos, chunk.getFile());
         otherPos.put(pos, chunk.getOtherPos());
-        mayUnload.remove(pos);
+        mayUnload.remove(chunk);
     }
 
     protected void reloadChunk(final Pair pos) {
         boolean end = false;
         do {
             try {
-                final File f = reload.remove(pos);
-                final Pair op = otherPos.remove(pos);
+                final File f = reload.get(pos);
+                final Pair op = otherPos.get(pos);
                 final MapReader r = new MapReader(f);
                 final Chunk chunk = new Chunk(r.read(op.x, op.z), f, op);
                 chunks.put(pos, chunk);
+                reload.remove(pos);
+                otherPos.remove(pos);
                 end = true;
             } catch (final OutOfMemoryError e) {
                 if (!mayUnload.isEmpty()) {
