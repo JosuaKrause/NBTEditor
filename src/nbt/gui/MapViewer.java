@@ -217,8 +217,8 @@ public class MapViewer extends JComponent {
         for (final Pair pos : reloadEntries) {
             if (isValidPos(g, pos)) {
                 reloadChunk(pos);
+                System.out.println("reload " + (i / size * 100.0) + "%");
             }
-            System.out.println("reload " + (i / size * 100.0) + "%");
             ++i;
         }
         final Pair[] chunksEntries = asArrayPair(chunks.keySet());

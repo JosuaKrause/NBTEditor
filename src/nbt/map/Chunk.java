@@ -15,6 +15,8 @@ import net.minecraft.world.level.chunk.storage.RegionFile;
 
 public class Chunk {
 
+    public static final int WORLD_HEIGHT = 256;
+
     private final NBTCompound level;
 
     private final File file;
@@ -117,8 +119,10 @@ public class Chunk {
     }
 
     public boolean hasBlockFor(final int y) {
-        final int sectionY = y / 16;
-        return getSection(sectionY) != null;
+        // does not handle holes correctly
+        // final int sectionY = y / 16;
+        // return getSection(sectionY) != null;
+        return y <= WORLD_HEIGHT;
     }
 
     private static int getBiomePosition(final int x, final int z) {
