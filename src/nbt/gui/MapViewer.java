@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
@@ -14,6 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -152,7 +154,7 @@ public class MapViewer extends JComponent {
 
     public void setFolder(final File folder) {
         chunks.clear();
-        for (final File f : folder.listFiles(new FileFilter() {
+        final File[] files = folder.listFiles(new FileFilter() {
 
             @Override
             public boolean accept(final File f) {
@@ -160,9 +162,15 @@ public class MapViewer extends JComponent {
                         && f.getName().endsWith(RegionFile.ANVIL_EXTENSION);
             }
 
-        })) {
+        });
+        final double size = files.length;
+        double i = 0;
+        for (final File f : files) {
             final MapReader r = new MapReader(f);
-            for (final Pair p : r.getChunks()) {
+            final List<Pair> chunkList = r.getChunks();
+            final double sizeInner = chunkList.size();
+            double j = 0;
+            for (final Pair p : chunkList) {
                 try {
                     final Chunk chunk = new Chunk(r.read(p.x, p.z), f, p);
                     chunks.put(chunk.getPos(), chunk);
@@ -174,7 +182,11 @@ public class MapViewer extends JComponent {
                         throw new Error(e);
                     }
                 }
+                ++j;
+                final double perc = (i + j / sizeInner) / size * 100;
+                System.out.println("loading " + perc + "%");
             }
+            ++i;
         }
         repaint();
         System.out.println("loading finished...");
@@ -188,12 +200,19 @@ public class MapViewer extends JComponent {
     public void paint(final Graphics gfx) {
         super.paint(gfx);
         final Graphics2D g = (Graphics2D) gfx;
+        final Rectangle r = getBounds();
+        g.setColor(getBackground());
+        g.fill(r);
         g.translate(-offX, -offZ);
         final Pair[] reloadEntries = asArrayPair(reload.keySet());
+        final double size = reloadEntries.length;
+        double i = 0;
         for (final Pair pos : reloadEntries) {
             if (isValidPos(g, pos)) {
                 reloadChunk(pos);
             }
+            System.out.println("reload " + (i / size * 100.0) + "%");
+            ++i;
         }
         final Pair[] chunksEntries = asArrayPair(chunks.keySet());
         for (final Pair pos : chunksEntries) {
@@ -238,7 +257,10 @@ public class MapViewer extends JComponent {
     }
 
     protected void unloadChunk(final Chunk chunk) {
-        imgCache.remove(chunk).flush();
+        final Image img = imgCache.remove(chunk);
+        if (img != null) {
+            img.flush();
+        }
         if (selChunk == chunk) {
             selChunk = null;
         }
