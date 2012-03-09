@@ -116,6 +116,13 @@ public class MapViewer extends JComponent {
         addMouseListener(mouse);
         addMouseMotionListener(mouse);
         setBackground(Color.BLACK);
+        final BufferedImage loading = new BufferedImage((int)(scale*16), (int)(scale*16), BufferedImage.TYPE_INT_RGB);
+        final Graphics2D g =(Graphics2D) loading.getGraphics();
+        g.setColor(new Color(0x404040));
+        final Rectangle r = new Rectangle(loading.getWidth(), loading.getHeight());
+        g.fill(r);
+        g.dispose();
+        this.loading = loading;
     }
 
     public Chunk getChunkAtScreen(final int x, final int z) {
@@ -292,24 +299,22 @@ public class MapViewer extends JComponent {
             }
         } while (!end);
     }
+    
+    private final Image loading;
+    
+    private final Set<Chunk> chunksToDraw = new HashSet<Chunk>();
 
     private final Map<Chunk, Image> imgCache = new HashMap<Chunk, Image>();
 
     private void drawChunk(final Graphics2D g, final Chunk chunk) {
         if (chunk.oneTimeHasChanged() || !imgCache.containsKey(chunk)) {
-            final BufferedImage img = new BufferedImage((int) scale * 16,
-                    (int) scale * 16, BufferedImage.TYPE_INT_ARGB);
-            final Graphics2D gi = (Graphics2D) img.getGraphics();
-            for (int x = 0; x < 16; ++x) {
-                for (int z = 0; z < 16; ++z) {
-                    final Rectangle2D rect = new Rectangle2D.Double(x * scale,
-                            z * scale, scale, scale);
-                    gi.setColor(chunk.getColorForColumn(x, z));
-                    gi.fill(rect);
-                }
+            imgCache.put(chunk, loading);
+            synchronized (chunksToDraw) {                
+                chunksToDraw.add(chunk);
             }
-            gi.dispose();
-            imgCache.put(chunk, img);
+            synchronized (drawer) {
+                drawer.notify();
+            }
         }
         g.drawImage(imgCache.get(chunk), 0, 0, this);
         if (selChunk == chunk) {
@@ -318,6 +323,61 @@ public class MapViewer extends JComponent {
             g.setColor(new Color(0x80000000, true));
             g.fill(rect);
         }
+    }
+    
+    private final Thread drawer = new Thread() {
+        
+        @Override
+        public void run() {
+            try {
+                while(!isInterrupted()) {
+                    Chunk c;
+                    for(;;) {
+                        boolean b; 
+                    synchronized (chunksToDraw) {
+                        b = chunksToDraw.isEmpty();
+                    }
+                    if(!b) {
+                        break;
+                    }
+                    synchronized (drawer) {
+                        wait();
+                    }
+                    }
+                    synchronized (chunksToDraw) {
+                        final Iterator<Chunk> it = chunksToDraw.iterator();
+                        c = it.next();
+                        it.remove();                        
+                    }
+                    drawChunk0(c);
+                }
+            } catch(final InterruptedException e) {
+                interrupt();
+            }
+        }
+
+    };
+    
+    {
+        drawer.setDaemon(true);
+        drawer.start();
+    }
+    
+    private void drawChunk0(final Chunk chunk) {
+        final BufferedImage img = new BufferedImage((int) (scale * 16),
+                (int) (scale * 16), BufferedImage.TYPE_INT_RGB);
+        final Graphics2D gi = (Graphics2D) img.getGraphics();
+        for (int x = 0; x < 16; ++x) {
+            for (int z = 0; z < 16; ++z) {
+                final Rectangle2D rect = new Rectangle2D.Double(x * scale,
+                        z * scale, scale, scale);
+                gi.setColor(chunk.getColorForColumn(x, z));
+                gi.fill(rect);
+            }
+        }
+        gi.dispose();
+        imgCache.put(chunk, img);
+        repaint();
     }
 
 }
