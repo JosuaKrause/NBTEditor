@@ -7,6 +7,7 @@
   <property name="cli" location="nbt.jar"/>
   <property name="zipsrc" location="nbt_src.zip"/>
   <property name="gui" location="nbt_edit.jar"/>
+  <property name="map" location="nbt_map.jar"/>
   <!-- the actual targets -->
   <target name="compile">
     <mkdir dir="${bin}"/>
@@ -27,6 +28,15 @@
     <jar destfile="${gui}">
       <manifest>
         <attribute name="Main-Class" value="nbt.MainEditor"/>
+        <attribute name="Class-Path" value="."/>
+      </manifest>
+      <fileset dir="${bin}">
+      </fileset>
+      <fileset file="${license}" />
+    </jar>
+  	<jar destfile="${gui}">
+      <manifest>
+        <attribute name="Main-Class" value="nbt.MainMap"/>
         <attribute name="Class-Path" value="."/>
       </manifest>
       <fileset dir="${bin}">

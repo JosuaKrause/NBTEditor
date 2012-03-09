@@ -116,7 +116,7 @@ public enum Blocks {
 
     CHEST(54, new Color(0x964B00).brighter().brighter()),
 
-    REDSTONE_WIRE(55, new Color(0x80ff0000, true)),
+    REDSTONE_WIRE(55, new Color(0x70ff0000, true)),
 
     DIAMOND_ORE(56, new Color(0x8000ffff, true)),
 
@@ -150,12 +150,17 @@ public enum Blocks {
 
     IRON_DOOR(71, new Color(0x80a0a0a0, true).brighter().brighter()),
 
-    // Wooden Pressure Plate.png 72 48 Wooden Pressure Plate D
-    // Redstone (Ore).png 73 49 Redstone Ore
-    // Redstone (Ore).png 74 4A Glowing Redstone Ore
-    // Redstone (Torch, Inactive).png 75 4B Redstone Torch ("off" state) D
-    // Redstone (Torch, Active).png 76 4C Redstone Torch ("on" state) D
-    // Stone Button.png 77 4D Stone Button D
+    WOODEN_PLATE(72, new Color(0x80964B00, true).brighter().brighter()),
+
+    REDSTONE_ORE(73, new Color(0x80ff0000, true)),
+
+    REDSTONE_ORE_ON(74, new Color(0x90ff0000, true)),
+
+    REDSTONE_TORCH(75, new Color(0x60ff0000, true)),
+
+    REDSTONE_TORCH_ON(76, new Color(0x80ff0000, true)),
+
+    BUTTON(77, new Color(0x40a0a0a0, true)),
 
     SNOW(78, new Color(0xc0ffffff, true)),
 
@@ -189,12 +194,16 @@ public enum Blocks {
     // Melon (Block).png 103 67 Melon
     // Seed Stem.png 104 68 Pumpkin Stem D
     // Seed Stem.png 105 69 Melon Stem D
-    // Vine.png 106 6A Vines D
+
+    VINE(106, new Color(0x80008000, true)),
+
     // Fence Gate (Closed).png 107 6B Fence Gate D
     // Brick Stairs.png 108 6C Brick Stairs D
     // Stone Brick Stairs.png 109 6D Stone Brick Stairs D
     // Mycelium.png 110 6E Mycelium
-    // Lily Pad.png 111 6F Lily Pad
+
+    LILY_PAD(111, new Color(0x80008000, true)),
+
     // Nether Brick.png 112 70 Nether Brick
     // Nether Brick Fence.png 113 71 Nether Brick Fence
     // Nether Brick Stairs.png 114 72 Nether Brick Stairs D
