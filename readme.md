@@ -17,6 +17,11 @@ The following jars are generated:
 
     The visual nbt editor.
 
+-   *nbt_map*
+
+    A minecraft anvil map viewer and planned to be editor.
+    Better run with -Xmx2g or more for larger maps.
+
 -   *nbt_src*
 
     A zip file containing the sources of this project.

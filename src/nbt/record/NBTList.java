@@ -1,10 +1,12 @@
 package nbt.record;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Iterator;
 
 import nbt.write.ByteWriter;
 
-public class NBTList extends NBTRecord {
+public class NBTList extends NBTRecord implements Iterable<NBTRecord> {
 
     private final NBTType type;
 
@@ -113,6 +115,11 @@ public class NBTList extends NBTRecord {
         }
         sb.append("}");
         return sb.toString();
+    }
+
+    @Override
+    public Iterator<NBTRecord> iterator() {
+        return Arrays.asList(records).iterator();
     }
 
 }

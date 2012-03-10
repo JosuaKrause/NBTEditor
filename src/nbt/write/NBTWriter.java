@@ -12,7 +12,11 @@ import nbt.record.NBTRecord;
 public class NBTWriter extends ByteWriter {
 
     public NBTWriter(final File file) throws IOException {
-        this(new BufferedOutputStream(new FileOutputStream(file)), true);
+        this(file, true);
+    }
+
+    public NBTWriter(final File file, final boolean wrapZip) throws IOException {
+        this(new BufferedOutputStream(new FileOutputStream(file)), wrapZip);
     }
 
     public NBTWriter(final OutputStream out, final boolean wrapZip)
