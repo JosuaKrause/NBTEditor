@@ -10,7 +10,12 @@ import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
+
+import nbt.gui.brush.BiomeBrush;
+import nbt.gui.brush.NoTopSnowBrush;
 
 public class MapEdit extends JPanel {
 
@@ -21,6 +26,8 @@ public class MapEdit extends JPanel {
     private File file;
 
     private MapViewer view;
+
+    private JSlider radius;
 
     public MapEdit(final MapViewer v, final MapFrame frame) {
         view = v;
@@ -41,6 +48,12 @@ public class MapEdit extends JPanel {
                     } catch (final IOException e) {
                         e.printStackTrace();
                     }
+                } else {
+                    JOptionPane.showMessageDialog(frame, "<html>WARNING!!!<br>"
+                            + "Make a backup of your world before opening.<br>"
+                            + "All brush operations are saved "
+                            + "immediately and permanent!<br>"
+                            + "Proceed at your own risk!");
                 }
                 final int returnVal = fc.showOpenDialog(MapEdit.this
                         .getParent());
@@ -59,6 +72,30 @@ public class MapEdit extends JPanel {
                 frame.setTitle(file, false);
             }
         }));
+        add(new JButton(new AbstractAction("No Snow") {
+
+            private static final long serialVersionUID = -688821755368432842L;
+
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                view.setClickReceiver(new NoTopSnowBrush(view, radius
+                        .getValue()));
+            }
+
+        }));
+        add(new JButton(new AbstractAction("Biome Brush") {
+
+            private static final long serialVersionUID = -5839320662899741392L;
+
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                view.setClickReceiver(BiomeBrush.getBrushGUI(frame, view,
+                        radius.getValue()));
+            }
+
+        }));
+        radius = new JSlider(1, 50);
+        add(radius);
     }
 
 }

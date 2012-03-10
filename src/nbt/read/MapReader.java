@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nbt.record.NBTRecord;
+import nbt.write.NBTWriter;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 
 public class MapReader {
@@ -86,6 +87,17 @@ public class MapReader {
             e.printStackTrace();
         }
         return rec;
+    }
+
+    public void write(final NBTRecord rec, final int x, final int z)
+            throws IOException {
+        if (!rec.hasChanged()) {
+            return;
+        }
+        final NBTWriter out = new NBTWriter(
+                regionSource.getChunkDataOutputStream(x, z), false);
+        out.write(rec);
+        out.close();
     }
 
     public File getRegionFile() {

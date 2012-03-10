@@ -24,11 +24,11 @@ public enum Blocks {
 
     WATER(8, new Color(0x400000ff, true)),
 
-    STAT_WATER(9, new Color(0x40000080, true)),
+    WATER_STAT(9, new Color(0x40000080, true)),
 
     LAVA(10, Color.RED),
 
-    STAT_LAVA(11, Color.RED),
+    LAVA_STAT(11, Color.RED),
 
     SAND(12, Color.YELLOW),
 
@@ -60,15 +60,15 @@ public enum Blocks {
 
     BED(26, new Color(0x8000ff00, true)),
 
-    POWERED_RAIL(27, new Color(0x8080ff80, true)),
+    RAIL_POWERED(27, new Color(0x8080ff80, true)),
 
-    DETECTOR_RAIL(28, new Color(0x80808080, true)),
+    RAIL_DETECTOR(28, new Color(0x80808080, true)),
 
-    STICKY_PISTON(29, new Color(0x80964B00, true)),
+    PISTON_STICKY(29, new Color(0x80964B00, true)),
 
     WEB(30, new Color(0x20ffffff, true)),
 
-    TALL_GRASS(31, new Color(0x2000ff00, true)),
+    GRASS_TALL(31, new Color(0x2000ff00, true)),
 
     DEAD_BUSH(32, new Color(0x20964B00, true)),
 
@@ -76,7 +76,7 @@ public enum Blocks {
 
     BLOCK34(34, Color.MAGENTA),
 
-    WHITE_WOOL(35, Color.WHITE),
+    WOOL_WHITE(35, Color.WHITE),
 
     TECHNICAL_BLOCK(36, new Color(0, true)),
 
@@ -92,7 +92,7 @@ public enum Blocks {
 
     IRON(42, Color.LIGHT_GRAY),
 
-    DBL_SLAB(43, Color.GRAY),
+    SLAB_DBL(43, Color.GRAY),
 
     SLAB(44, new Color(0x80808080, true)),
 
@@ -112,7 +112,7 @@ public enum Blocks {
 
     SPAWNER(52, new Color(0x80202020, true)),
 
-    WOOD_STAIRS(53, new Color(0x964B00).brighter().brighter()),
+    STAIRS_WOOD(53, new Color(0x964B00).brighter().brighter()),
 
     CHEST(54, new Color(0x964B00).brighter().brighter()),
 
@@ -122,7 +122,7 @@ public enum Blocks {
 
     DIAMOND(57, new Color(0x00ffff)),
 
-    CRAFTING(58, new Color(0x964B00).brighter()),
+    CRAFTING_TABLE(58, new Color(0x964B00).brighter()),
 
     CROPS(59, new Color(0x80ffff00, true)),
 
@@ -134,7 +134,7 @@ public enum Blocks {
 
     SIGN(63, new Color(0x60964B00, true).brighter().brighter()),
 
-    WOOD_DOOR(64, new Color(0x80964B00, true).brighter().brighter()),
+    DOOR_WOOD(64, new Color(0x80964B00, true).brighter().brighter()),
 
     LADDER(65, new Color(0x70964B00, true).brighter().brighter()),
 
@@ -146,11 +146,11 @@ public enum Blocks {
 
     LEVER(69, new Color(0x60964B00, true).brighter().brighter()),
 
-    STONE_PLATE(70, new Color(0x80a0a0a0, true)),
+    PLATE_STONE(70, new Color(0x80a0a0a0, true)),
 
-    IRON_DOOR(71, new Color(0x80a0a0a0, true).brighter().brighter()),
+    DOOR_IRON(71, new Color(0x80a0a0a0, true).brighter().brighter()),
 
-    WOODEN_PLATE(72, new Color(0x80964B00, true).brighter().brighter()),
+    PLATE_WOOD(72, new Color(0x80964B00, true).brighter().brighter()),
 
     REDSTONE_ORE(73, new Color(0x80ff0000, true)),
 
@@ -222,9 +222,9 @@ public enum Blocks {
 
     FENCE_GATE(107, new Color(0x80964B00, true).brighter().brighter()),
 
-    BRICK_STAIRS(108, new Color(0xd64B00, false).darker()),
+    STAIRS_BRICK(108, new Color(0xd64B00, false).darker()),
 
-    STONE_BRICK_STAIRS(109, Color.GRAY),
+    STAIRS_STONE_BRICK(109, Color.GRAY),
 
     MYCELLIUM(110, new Color(0x964B00)),
 
@@ -232,22 +232,22 @@ public enum Blocks {
 
     NETHER_BRICK(112, new Color(0x600000)),
 
-    NETHER_BRICK_FENCE(113, new Color(0x80600000, true)),
+    FENCE_NETHER_BRICK(113, new Color(0x80600000, true)),
 
-    NETHER_BRICK_STAIRS(114, new Color(0x600000)),
+    STAIRS_NETHER_BRICK(114, new Color(0x600000)),
 
     NETHER_WART(115, new Color(0x80800045, true)),
 
     ENCHANTMENT(116, new Color(0x8000d0d0, true)),
-    
+
     BREWING(117, new Color(0x80d00000, true)),
-    
+
     CAULDRON(118, new Color(0x80707070, true)),
-    
+
     PORTAL_END(119, new Color(0x80000000, true)),
 
     PORTAL_END_FRAME(120, new Color(0x00d0d0)),
-    
+
     STONE_END(121, new Color(0xa0a070)),
 
     DRAGON_EGG(122, new Color(0x80202020, true)),
