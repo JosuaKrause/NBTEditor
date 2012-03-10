@@ -79,4 +79,9 @@ public enum Biomes {
         return biomeMap.containsKey(id) ? biomeMap.get(id) : DEFAULT_UNASSIGNED;
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
+
 }

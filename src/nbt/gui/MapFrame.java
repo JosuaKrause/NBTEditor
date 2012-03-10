@@ -31,9 +31,15 @@ public class MapFrame extends JFrame {
 
     private String str;
 
+    private String brush;
+
     public void setTitleText(final String str) {
         this.str = str;
         setTitle(file, chg);
+    }
+
+    public void setBrush(final String brush) {
+        this.brush = brush;
     }
 
     public void setTitle(final File file, final boolean changed) {
@@ -41,7 +47,8 @@ public class MapFrame extends JFrame {
         chg = changed;
         setTitle(TITLE + (changed ? "*" : "")
                 + (file != null ? file.toString() : "-")
-                + (str != null ? " - " + str : ""));
+                + (str != null ? " - " + str : "")
+                + (brush != null ? " Brush: " + brush : ""));
     }
 
 }

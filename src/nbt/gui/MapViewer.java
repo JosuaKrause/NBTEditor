@@ -69,11 +69,17 @@ public class MapViewer extends JComponent {
 
             @Override
             public void mousePressed(final MouseEvent e) {
-                tmpX = e.getX();
-                tmpY = e.getY();
-                tmpOffX = offX;
-                tmpOffZ = offZ;
-                drag = true;
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    if (clickReceiver != null) {
+                        clickReceiver.clicked(e.getX(), e.getY());
+                    }
+                } else if (e.getButton() == MouseEvent.BUTTON1) {
+                    tmpX = e.getX();
+                    tmpY = e.getY();
+                    tmpOffX = offX;
+                    tmpOffZ = offZ;
+                    drag = true;
+                }
             }
 
             @Override
@@ -129,7 +135,7 @@ public class MapViewer extends JComponent {
         this.loading = loading;
     }
 
-    public Chunk getChunkAtScreen(final int x, final int z) {
+    protected Chunk getChunkAtScreen(final int x, final int z) {
         final int cx = (int) ((offX + x) / scale) / 16 - (offX + x < 0 ? 1 : 0);
         final int cz = (int) ((offZ + z) / scale) / 16 - (offZ + z < 0 ? 1 : 0);
         Chunk c;
@@ -334,6 +340,8 @@ public class MapViewer extends JComponent {
         synchronized (mayUnload) {
             mayUnload.remove(chunk);
         }
+        // writes the chunk if changed
+        chunk.unload();
     }
 
     public static final double MEM_RATIO = 0.2;
@@ -537,6 +545,46 @@ public class MapViewer extends JComponent {
                 imgCache.put(chunk, img);
             }
         }
+    }
+
+    public static interface ChunkEdit {
+
+        void edit(Chunk c, Pair posInChunk);
+
+    }
+
+    private final Set<Chunk> editedChunks = new HashSet<Chunk>();
+
+    public void editChunk(final int x, final int z, final ChunkEdit editor) {
+        final Chunk c = getChunkAtScreen(x, z);
+        if (c == null) {
+            return;
+        }
+        final Pair p = getPosInChunkAtScreen(x, z);
+        editor.edit(c, p);
+        editedChunks.add(c);
+    }
+
+    public void editFinished() {
+        for (final Chunk c : editedChunks) {
+            unloadChunk(c);
+        }
+        editedChunks.clear();
+    }
+
+    public static interface ClickReceiver {
+
+        void clicked(int x, int z);
+
+        String name();
+
+    }
+
+    private ClickReceiver clickReceiver;
+
+    public void setClickReceiver(final ClickReceiver cr) {
+        clickReceiver = cr;
+        frame.setBrush(clickReceiver != null ? clickReceiver.name() : null);
     }
 
 }
