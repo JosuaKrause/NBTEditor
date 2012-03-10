@@ -5,8 +5,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -261,6 +263,9 @@ public class MapViewer extends JComponent {
         synchronized (chunks) {
             chunksEntries = asArrayPair(chunks.keySet());
         }
+        boolean hasMid = false;
+        double midX = 0;
+        double midZ = 0;
         for (final Pair pos : chunksEntries) {
             final Chunk c;
             synchronized (chunks) {
@@ -281,9 +286,31 @@ public class MapViewer extends JComponent {
             }
             final double x = pos.x * scale;
             final double z = pos.z * scale;
+            if (selChunk == c) {
+                midX = x;
+                midZ = z;
+                hasMid = true;
+            }
             final Graphics2D g2 = (Graphics2D) g.create();
             g2.translate(x, z);
             drawChunk(g2, c);
+            g2.dispose();
+        }
+        if (hasMid) {
+            final Graphics2D g2 = (Graphics2D) g.create();
+            g2.translate(midX, midZ);
+            final Shape s;
+            if (clickReceiver != null) {
+                final double rad = clickReceiver.radius();
+                s = new Ellipse2D.Double((selPos.x - rad) * scale,
+                        (selPos.z - rad) * scale, scale * rad * 2, scale * rad
+                                * 2);
+            } else {
+                s = new Rectangle2D.Double(selPos.x * scale, selPos.z * scale,
+                        scale, scale);
+            }
+            g2.setColor(new Color(0x80000000, true));
+            g2.fill(s);
             g2.dispose();
         }
     }
@@ -441,12 +468,6 @@ public class MapViewer extends JComponent {
             img = imgCache.get(chunk);
         }
         g.drawImage(img, 0, 0, this);
-        if (selChunk == chunk) {
-            final Rectangle2D rect = new Rectangle2D.Double(selPos.x * scale,
-                    selPos.z * scale, scale, scale);
-            g.setColor(new Color(0x80000000, true));
-            g.fill(rect);
-        }
     }
 
     private final Thread reloader = new Thread() {
@@ -578,6 +599,10 @@ public class MapViewer extends JComponent {
 
         String name();
 
+        void setRadius(int newRadius);
+
+        int radius();
+
     }
 
     private ClickReceiver clickReceiver;
@@ -585,6 +610,10 @@ public class MapViewer extends JComponent {
     public void setClickReceiver(final ClickReceiver cr) {
         clickReceiver = cr;
         frame.setBrush(clickReceiver != null ? clickReceiver.name() : null);
+    }
+
+    public ClickReceiver getClickReceiver() {
+        return clickReceiver;
     }
 
 }

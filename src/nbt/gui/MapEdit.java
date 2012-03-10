@@ -13,7 +13,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
+import nbt.gui.MapViewer.ClickReceiver;
 import nbt.gui.brush.BiomeBrush;
 import nbt.gui.brush.NoTopSnowBrush;
 
@@ -95,6 +98,18 @@ public class MapEdit extends JPanel {
 
         }));
         radius = new JSlider(1, 50);
+        radius.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(final ChangeEvent e) {
+                final ClickReceiver clickReceiver = view.getClickReceiver();
+                if (clickReceiver == null) {
+                    return;
+                }
+                clickReceiver.setRadius(radius.getValue());
+            }
+
+        });
         add(radius);
     }
 
