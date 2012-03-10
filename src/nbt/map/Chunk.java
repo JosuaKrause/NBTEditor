@@ -290,7 +290,7 @@ public class Chunk {
         if (active) {
             if (root.hasChanged()) {
                 try {
-                    final MapReader r = new MapReader(file);
+                    final MapReader r = MapReader.getForFile(file);
                     r.write(root, otherPos.x, otherPos.z);
                 } catch (final IOException e) {
                     e.printStackTrace();

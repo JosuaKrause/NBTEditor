@@ -4,13 +4,15 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import nbt.record.NBTRecord;
 import nbt.write.NBTWriter;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 
-public class MapReader {
+public final class MapReader {
 
     public static final class Pair {
         public final int x;
@@ -38,12 +40,26 @@ public class MapReader {
         }
     }
 
-    private final File regionFile;
+    private static final Map<File, MapReader> CACHE = new HashMap<File, MapReader>();
+
+    public static MapReader getForFile(final File file) {
+        synchronized (CACHE) {
+            if (!CACHE.containsKey(file)) {
+                CACHE.put(file, new MapReader(file));
+            }
+            return CACHE.get(file);
+        }
+    }
+
+    public static void clearCache() {
+        synchronized (CACHE) {
+            CACHE.clear();
+        }
+    }
 
     private final RegionFile regionSource;
 
-    public MapReader(final File regionFile) {
-        this.regionFile = regionFile;
+    private MapReader(final File regionFile) {
         regionSource = new RegionFile(regionFile);
     }
 
@@ -98,10 +114,6 @@ public class MapReader {
                 regionSource.getChunkDataOutputStream(x, z), false);
         out.write(rec);
         out.close();
-    }
-
-    public File getRegionFile() {
-        return regionFile;
     }
 
 }
