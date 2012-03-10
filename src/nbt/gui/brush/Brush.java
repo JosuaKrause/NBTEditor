@@ -12,14 +12,13 @@ public abstract class Brush implements ClickReceiver {
 
     private final ChunkEdit edit;
 
-    private final int radius;
+    private int radius;
 
-    private final int r2;
+    private int r2;
 
     public Brush(final MapViewer viewer, final int radius) {
         this.viewer = viewer;
-        this.radius = radius;
-        r2 = radius * radius;
+        setRadius(radius);
         edit = new ChunkEdit() {
 
             @Override
@@ -30,15 +29,22 @@ public abstract class Brush implements ClickReceiver {
         };
     }
 
+    @Override
+    public void setRadius(final int newRadius) {
+        radius = newRadius;
+        r2 = radius * radius;
+    }
+
+    @Override
     public int radius() {
         return radius;
     }
 
     @Override
     public void clicked(final int x, final int z) {
-        for (int i = -radius; i <= radius; ++i) {
-            for (int j = -radius; j <= radius; ++j) {
-                if (i * i + j * j > r2) {
+        for (int i = -radius * 2; i <= radius * 2; ++i) {
+            for (int j = -radius * 2; j <= radius * 2; ++j) {
+                if (i * i + j * j > 4 * r2) {
                     continue;
                 }
                 final int posX = x + i;
