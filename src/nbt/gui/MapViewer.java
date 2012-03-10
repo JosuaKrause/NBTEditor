@@ -200,6 +200,7 @@ public class MapViewer extends JComponent {
         synchronized (chunks) {
             chunks.clear();
         }
+        MapReader.clearCache();
         final File[] files = folder.listFiles(new FileFilter() {
 
             @Override
@@ -220,7 +221,7 @@ public class MapViewer extends JComponent {
 
         });
         for (final File f : files) {
-            final MapReader r = new MapReader(f);
+            final MapReader r = MapReader.getForFile(f);
             final List<Pair> chunkList = r.getChunks();
             for (final Pair p : chunkList) {
                 if (t != iniLoader || t.isInterrupted()) {
@@ -406,7 +407,7 @@ public class MapViewer extends JComponent {
                 synchronized (otherPos) {
                     op = otherPos.get(pos);
                 }
-                final MapReader r = new MapReader(f);
+                final MapReader r = MapReader.getForFile(f);
                 final Chunk chunk = new Chunk(r.read(op.x, op.z), f, op);
                 synchronized (chunks) {
                     chunks.put(pos, chunk);

@@ -103,7 +103,8 @@ public class NBTEdit extends JPanel {
                 try {
                     if (hasExtension(file, RegionFile.ANVIL_EXTENSION,
                             RegionFile.MCREGION_EXTENSION)) {
-                        final MapReader mr = new MapReader(file);
+                        MapReader.clearCache();
+                        final MapReader mr = MapReader.getForFile(file);
                         final List<Pair> coords = mr.getChunks();
                         final Pair chunk = (Pair) JOptionPane.showInputDialog(
                                 frame, "Choose the chunk to display",
