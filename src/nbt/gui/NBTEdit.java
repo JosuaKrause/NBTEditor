@@ -5,8 +5,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Scanner;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -34,6 +36,8 @@ import net.minecraft.world.level.chunk.storage.RegionFile;
 public class NBTEdit extends JPanel {
 
     private static final long serialVersionUID = 6117715159789114581L;
+
+    public static final File LAST = new File(".lastNBT");
 
     private final JLabel name;
 
@@ -92,12 +96,28 @@ public class NBTEdit extends JPanel {
             @Override
             public void actionPerformed(final ActionEvent ae) {
                 final JFileChooser fc = new JFileChooser();
+                if (LAST.exists()) {
+                    try {
+                        final Scanner s = new Scanner(LAST);
+                        final File last = new File(s.nextLine());
+                        fc.setSelectedFile(last);
+                    } catch (final IOException e) {
+                        e.printStackTrace();
+                    }
+                }
                 final int returnVal = fc.showOpenDialog(NBTEdit.this
                         .getParent());
                 if (returnVal != JFileChooser.APPROVE_OPTION) {
                     return;
                 }
                 file = fc.getSelectedFile();
+                try {
+                    final PrintWriter pw = new PrintWriter(LAST, "UTF-8");
+                    pw.println(file);
+                    pw.close();
+                } catch (final IOException e) {
+                    e.printStackTrace();
+                }
                 NBTReader read = null;
                 NBTRecord r = null;
                 try {
