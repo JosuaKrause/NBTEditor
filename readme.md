@@ -21,7 +21,9 @@ The following jars are generated:
 
     A minecraft anvil map viewer and editor.
     Better run with -Xmx2g or more for larger maps.
+    
     NOTE THAT ALL CHANGES TO A MAP IN THIS VIEW ARE PERMANENT!
+    
     So you better should backup your world before loading it
     in this editor. Edit the world by choosing a brush and
     right click on the map. The slider can be used to set the radius.
