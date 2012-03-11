@@ -1,11 +1,14 @@
 package nbt.gui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -24,7 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 
 import nbt.map.Chunk;
 import nbt.read.MapReader;
@@ -143,6 +150,23 @@ public class MapViewer extends JComponent {
         addMouseListener(mouse);
         addMouseMotionListener(mouse);
         addMouseWheelListener(mouse);
+        final InputMap inp = new InputMap();
+        inp.put(KeyStroke.getKeyStroke(KeyEvent.VK_B, 0), "BIOME");
+        final ActionMap am = new ActionMap();
+        am.put("BIOME", new AbstractAction() {
+
+            private static final long serialVersionUID = -5517714907864610590L;
+
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                setShowBiomes(!showsBiomes());
+            }
+
+        });
+        setActionMap(am);
+        setInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, inp);
+        setFocusable(true);
+        grabFocus();
         setBackground(Color.BLACK);
         final BufferedImage loading = new BufferedImage((int) (scale * 16),
                 (int) (scale * 16), BufferedImage.TYPE_INT_RGB);
@@ -153,6 +177,17 @@ public class MapViewer extends JComponent {
         g.fill(r);
         g.dispose();
         this.loading = loading;
+    }
+
+    private boolean showBiomes;
+
+    public void setShowBiomes(final boolean showBiomes) {
+        this.showBiomes = showBiomes;
+        repaint();
+    }
+
+    public boolean showsBiomes() {
+        return showBiomes;
     }
 
     private Controls controls;
@@ -202,6 +237,13 @@ public class MapViewer extends JComponent {
     private Thread iniLoader;
 
     public void setFolder(final File folder) {
+        final Dimension dim = getSize();
+        offX = (int) (-dim.width * 0.25 * scale);
+        offZ = (int) (-dim.height * 0.25 * scale);
+        selChunk = null;
+        selPos = null;
+        showBiomes = false;
+        grabFocus();
         if (iniLoader != null) {
             synchronized (iniLoader) {
                 iniLoader.interrupt();
@@ -493,6 +535,16 @@ public class MapViewer extends JComponent {
             img = imgCache.get(chunk);
         }
         g.drawImage(img, 0, 0, this);
+        if (showBiomes) {
+            for (int x = 0; x < 16; ++x) {
+                for (int z = 0; z < 16; ++z) {
+                    final Rectangle2D rect = new Rectangle2D.Double(x * scale,
+                            z * scale, scale, scale);
+                    g.setColor(chunk.getBiome(x, z).color);
+                    g.fill(rect);
+                }
+            }
+        }
     }
 
     private final Thread reloader = new Thread() {
@@ -636,6 +688,7 @@ public class MapViewer extends JComponent {
         clickReceiver = cr;
         frame.setBrush(clickReceiver != null ? clickReceiver.name() : null);
         repaint();
+        grabFocus();
     }
 
     public ClickReceiver getClickReceiver() {
