@@ -11,10 +11,12 @@ public class MapFrame extends JFrame {
 
     private static final long serialVersionUID = 9004371841431541418L;
 
+    private final MapViewer view;
+
     public MapFrame() {
         setTitle(null, false);
         setPreferredSize(new Dimension(800, 600));
-        final MapViewer view = new MapViewer(this, 2.0);
+        view = new MapViewer(this, 2.0);
         setLayout(new BorderLayout());
         add(view, BorderLayout.CENTER);
         add(new MapEdit(view, this), BorderLayout.SOUTH);
@@ -49,6 +51,12 @@ public class MapFrame extends JFrame {
                 + (file != null ? file.toString() : "-")
                 + (str != null ? " - " + str : "")
                 + (brush != null ? " Brush: " + brush : ""));
+    }
+
+    @Override
+    public void dispose() {
+        view.setControls(null);
+        super.dispose();
     }
 
 }
