@@ -8,6 +8,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -122,9 +123,26 @@ public class MapViewer extends JComponent {
                 setToolTipText(null);
             }
 
+            @Override
+            public void mouseWheelMoved(final MouseWheelEvent e) {
+                if (controls == null) {
+                    return;
+                }
+                final int rot = e.getWheelRotation();
+                int radius = controls.getRadius() + rot;
+                if (radius < controls.getMinRadius()) {
+                    radius = controls.getMinRadius();
+                }
+                if (radius > controls.getMaxRadius()) {
+                    radius = controls.getMaxRadius();
+                }
+                controls.setRadius(radius);
+            }
+
         };
         addMouseListener(mouse);
         addMouseMotionListener(mouse);
+        addMouseWheelListener(mouse);
         setBackground(Color.BLACK);
         final BufferedImage loading = new BufferedImage((int) (scale * 16),
                 (int) (scale * 16), BufferedImage.TYPE_INT_RGB);
@@ -135,6 +153,12 @@ public class MapViewer extends JComponent {
         g.fill(r);
         g.dispose();
         this.loading = loading;
+    }
+
+    private Controls controls;
+
+    public void setControls(final Controls controls) {
+        this.controls = controls;
     }
 
     protected Chunk getChunkAtScreen(final int x, final int z) {
@@ -611,6 +635,7 @@ public class MapViewer extends JComponent {
     public void setClickReceiver(final ClickReceiver cr) {
         clickReceiver = cr;
         frame.setBrush(clickReceiver != null ? clickReceiver.name() : null);
+        repaint();
     }
 
     public ClickReceiver getClickReceiver() {

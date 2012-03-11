@@ -1,8 +1,8 @@
 package nbt.map;
 
 import java.awt.Color;
-import java.util.HashMap;
-import java.util.Map;
+
+import nbt.DynamicArray;
 
 public enum Blocks {
 
@@ -264,14 +264,19 @@ public enum Blocks {
 
     public final Color color;
 
-    private static final Map<Integer, Blocks> blockMap = new HashMap<Integer, Blocks>();
+    private static final DynamicArray<Blocks> blockMap;
 
     static {
-        for (final Blocks block : values()) {
-            if (blockMap.containsKey(block.id)) {
+        final Blocks[] blocks = values();
+        blockMap = new DynamicArray<Blocks>(blocks.length);
+        for (final Blocks block : blocks) {
+            if (block.id < 0) {
+                continue;
+            }
+            if (blockMap.get(block.id) != null) {
                 throw new InternalError("duplicate block id: " + block.id);
             }
-            blockMap.put(block.id, block);
+            blockMap.set(block.id, block);
         }
     }
 
@@ -281,7 +286,11 @@ public enum Blocks {
     }
 
     public static Blocks getBlockForId(final int id) {
-        return blockMap.containsKey(id) ? blockMap.get(id) : DEFAULT_UNASSIGNED;
+        if (id < 0) {
+            return DEFAULT_UNASSIGNED;
+        }
+        final Blocks block = blockMap.get(id);
+        return block != null ? block : DEFAULT_UNASSIGNED;
     }
 
 }

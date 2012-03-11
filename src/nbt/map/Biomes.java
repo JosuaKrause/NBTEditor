@@ -1,7 +1,6 @@
 package nbt.map;
 
-import java.util.HashMap;
-import java.util.Map;
+import nbt.DynamicArray;
 
 public enum Biomes {
 
@@ -59,14 +58,19 @@ public enum Biomes {
 
     public final String name;
 
-    private static final Map<Integer, Biomes> biomeMap = new HashMap<Integer, Biomes>();
+    private static final DynamicArray<Biomes> biomeMap;
 
     static {
-        for (final Biomes biome : values()) {
-            if (biomeMap.containsKey(biome.id)) {
+        final Biomes[] biomes = values();
+        biomeMap = new DynamicArray<Biomes>(biomes.length);
+        for (final Biomes biome : biomes) {
+            if (biome.id < 0) {
+                continue;
+            }
+            if (biomeMap.get(biome.id) != null) {
                 throw new InternalError("duplicate biome id: " + biome.id);
             }
-            biomeMap.put(biome.id, biome);
+            biomeMap.set(biome.id, biome);
         }
     }
 
@@ -76,7 +80,11 @@ public enum Biomes {
     }
 
     public static Biomes getBlockForId(final int id) {
-        return biomeMap.containsKey(id) ? biomeMap.get(id) : DEFAULT_UNASSIGNED;
+        if (id < 0) {
+            return DEFAULT_UNASSIGNED;
+        }
+        final Biomes biome = biomeMap.get(id);
+        return biome != null ? biome : DEFAULT_UNASSIGNED;
     }
 
     @Override

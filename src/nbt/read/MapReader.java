@@ -72,7 +72,7 @@ public final class MapReader {
                         final DataInputStream regionChunkInputStream = regionSource
                                 .getChunkDataInputStream(x, z);
                         if (regionChunkInputStream == null) {
-                            System.out.println("Failed to fetch input stream");
+                            System.err.println("Failed to fetch input stream");
                             continue;
                         }
                         res.add(new Pair(x, z));

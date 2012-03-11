@@ -20,7 +20,7 @@ import nbt.gui.MapViewer.ClickReceiver;
 import nbt.gui.brush.BiomeBrush;
 import nbt.gui.brush.NoTopSnowBrush;
 
-public class MapEdit extends JPanel {
+public class MapEdit extends JPanel implements Controls {
 
     private static final long serialVersionUID = 8342464413305576303L;
 
@@ -34,6 +34,7 @@ public class MapEdit extends JPanel {
 
     public MapEdit(final MapViewer v, final MapFrame frame) {
         view = v;
+        view.setControls(this);
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
         add(new JButton(new AbstractAction("Open") {
 
@@ -97,20 +98,45 @@ public class MapEdit extends JPanel {
             }
 
         }));
-        radius = new JSlider(1, 50);
+        radius = new JSlider(getMinRadius(), getMaxRadius());
         radius.addChangeListener(new ChangeListener() {
 
             @Override
             public void stateChanged(final ChangeEvent e) {
-                final ClickReceiver clickReceiver = view.getClickReceiver();
-                if (clickReceiver == null) {
-                    return;
-                }
-                clickReceiver.setRadius(radius.getValue());
+                setRadius(radius.getValue());
             }
 
         });
         add(radius);
+    }
+
+    @Override
+    public int getMaxRadius() {
+        return 50;
+    }
+
+    @Override
+    public int getMinRadius() {
+        return 1;
+    }
+
+    @Override
+    public int getRadius() {
+        return radius.getValue();
+    }
+
+    @Override
+    public void setRadius(final int radius) {
+        if (radius == getRadius()) {
+            return;
+        }
+        this.radius.setValue(radius);
+        final ClickReceiver clickReceiver = view.getClickReceiver();
+        if (clickReceiver == null) {
+            return;
+        }
+        clickReceiver.setRadius(radius);
+        view.repaint();
     }
 
 }

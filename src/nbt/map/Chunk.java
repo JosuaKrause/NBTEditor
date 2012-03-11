@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import nbt.DynamicArray;
 import nbt.read.MapReader;
 import nbt.read.MapReader.Pair;
 import nbt.record.NBTByteArray;
@@ -39,6 +40,12 @@ public class Chunk {
         zCache = ((NBTNumeric) level.get("zPos")).getPayload().intValue();
         biomes = (NBTByteArray) level.get("Biomes");
         sections = (NBTList) level.get("Sections");
+        sectionCache = new DynamicArray<NBTCompound>(sections.getLength());
+        for (final NBTRecord r : sections) {
+            final NBTCompound comp = (NBTCompound) r;
+            final int y = getSectionY(comp);
+            sectionCache.set(y, comp);
+        }
     }
 
     public Pair getOtherPos() {
@@ -61,32 +68,14 @@ public class Chunk {
 
     private final NBTList sections;
 
-    private final Map<Integer, NBTCompound> sectionCache = new HashMap<Integer, NBTCompound>();
+    private final DynamicArray<NBTCompound> sectionCache;
 
     protected NBTCompound getSection(final int y) {
-        if (sectionCache.containsKey(y)) {
-            return sectionCache.get(y);
-        }
-        if (sections.getLength() > y) {
-            final NBTCompound comp = (NBTCompound) sections.getAt(y);
-            if (checkSectionY(comp, y)) {
-                sectionCache.put(y, comp);
-                return comp;
-            }
-        }
-        for (final NBTRecord r : sections) {
-            final NBTCompound comp = (NBTCompound) r;
-            if (checkSectionY(comp, y)) {
-                sectionCache.put(y, comp);
-                return comp;
-            }
-        }
-        sectionCache.put(y, null);
-        return null;
+        return sectionCache.get(y);
     }
 
-    private static boolean checkSectionY(final NBTCompound section, final int y) {
-        return ((NBTNumeric) section.get("Y")).getPayload().byteValue() == y;
+    private static int getSectionY(final NBTCompound section) {
+        return ((NBTNumeric) section.get("Y")).getPayload().byteValue();
     }
 
     private static int getBlockPositionInSection(final int x, final int y,
@@ -257,7 +246,14 @@ public class Chunk {
     }
 
     private static Color combine(final Color old, final Color add) {
-        final double a = add.getAlpha() / 255.0;
+        final int alpha = add.getAlpha();
+        if (alpha == 255) {
+            return add;
+        }
+        if (alpha == 0) {
+            return old;
+        }
+        final double a = alpha / 255.0;
         final double r = old.getRed() * (1.0 - a) + add.getRed() * a;
         final double g = old.getGreen() * (1.0 - a) + add.getGreen() * a;
         final double b = old.getBlue() * (1.0 - a) + add.getBlue() * a;
