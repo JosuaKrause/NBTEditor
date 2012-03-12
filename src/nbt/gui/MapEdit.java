@@ -83,7 +83,7 @@ public class MapEdit extends JPanel implements Controls {
             @Override
             public void actionPerformed(final ActionEvent e) {
                 view.setClickReceiver(new NoTopSnowBrush(view, radius
-                        .getValue()));
+                        .getValue(), false));
             }
 
         }));
