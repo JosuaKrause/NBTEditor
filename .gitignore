@@ -1,3 +1,5 @@
 /bin/
 /.lastMap
 /.lastNBT
+/.sonar/
+/sonar-project.properties

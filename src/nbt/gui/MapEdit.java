@@ -18,6 +18,7 @@ import javax.swing.event.ChangeListener;
 
 import nbt.gui.MapViewer.ClickReceiver;
 import nbt.gui.brush.BiomeBrush;
+import nbt.gui.brush.DesertBrush;
 import nbt.gui.brush.NoTopSnowBrush;
 
 public class MapEdit extends JPanel implements Controls {
@@ -84,6 +85,17 @@ public class MapEdit extends JPanel implements Controls {
             public void actionPerformed(final ActionEvent e) {
                 view.setClickReceiver(new NoTopSnowBrush(view, radius
                         .getValue(), false));
+            }
+
+        }));
+        add(new JButton(new AbstractAction("Desert Brush") {
+
+            private static final long serialVersionUID = -16006819268382428L;
+
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                view.setClickReceiver(DesertBrush.brushGUI(frame, view,
+                        radius.getValue()));
             }
 
         }));
