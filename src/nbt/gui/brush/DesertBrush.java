@@ -15,7 +15,7 @@ public class DesertBrush extends Brush {
 
     public DesertBrush(final MapViewer viewer, final int radius,
             final boolean sandstone) {
-        super(viewer, radius);
+        super(viewer, radius, true);
         this.sandstone = sandstone;
     }
 

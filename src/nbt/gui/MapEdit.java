@@ -20,6 +20,7 @@ import nbt.gui.MapViewer.ClickReceiver;
 import nbt.gui.brush.BiomeBrush;
 import nbt.gui.brush.DesertBrush;
 import nbt.gui.brush.NoTopSnowBrush;
+import nbt.gui.brush.WorldBorderBrush;
 
 public class MapEdit extends JPanel implements Controls {
 
@@ -107,6 +108,17 @@ public class MapEdit extends JPanel implements Controls {
             public void actionPerformed(final ActionEvent e) {
                 view.setClickReceiver(BiomeBrush.getBrushGUI(frame, view,
                         radius.getValue()));
+            }
+
+        }));
+        add(new JButton(new AbstractAction("World Border Brush") {
+
+            private static final long serialVersionUID = -5333405739914885063L;
+
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                view.setClickReceiver(new WorldBorderBrush(view, radius
+                        .getValue()));
             }
 
         }));

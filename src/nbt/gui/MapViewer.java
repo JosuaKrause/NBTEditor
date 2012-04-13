@@ -369,9 +369,10 @@ public class MapViewer extends JComponent {
             final Shape s;
             if (clickReceiver != null) {
                 final double rad = clickReceiver.radius();
-                s = new Ellipse2D.Double((selPos.x - rad) * scale,
-                        (selPos.z - rad) * scale, scale * rad * 2, scale * rad
-                                * 2);
+                final double left=(selPos.x - rad) * scale;
+                final double top=(selPos.z - rad) * scale;
+                final double diameter =scale * rad * 2;
+                s = clickReceiver.isCircle() ? new Ellipse2D.Double(left,top, diameter, diameter) : new Rectangle2D.Double(left, top, diameter, diameter);
             } else {
                 s = new Rectangle2D.Double(selPos.x * scale, selPos.z * scale,
                         scale, scale);
@@ -679,6 +680,8 @@ public class MapViewer extends JComponent {
         void setRadius(int newRadius);
 
         int radius();
+
+        boolean isCircle();
 
     }
 

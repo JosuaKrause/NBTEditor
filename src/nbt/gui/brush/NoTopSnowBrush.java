@@ -10,7 +10,7 @@ public class NoTopSnowBrush extends Brush {
 
     public NoTopSnowBrush(final MapViewer viewer, final int radius,
             final boolean onlyOnTop) {
-        super(viewer, radius);
+        super(viewer, radius, true);
         this.onlyOnTop = onlyOnTop;
     }
 

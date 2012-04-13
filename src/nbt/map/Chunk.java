@@ -199,6 +199,11 @@ public class Chunk {
         return y <= WORLD_HEIGHT && y >= 0;
     }
 
+    public boolean canSetBlock(final int y) {
+        final int sectionY = y / 16;
+        return getSection(sectionY) != null && hasBlockFor(y);
+    }
+
     private static int getBiomePosition(final int x, final int z) {
         return (z << 4) | x;
     }

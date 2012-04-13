@@ -12,11 +12,15 @@ public abstract class Brush implements ClickReceiver {
 
     private final ChunkEdit edit;
 
+    private final boolean circle;
+
     private int radius;
 
     private int r2;
 
-    public Brush(final MapViewer viewer, final int radius) {
+    protected Brush(final MapViewer viewer, final int radius,
+            final boolean circle) {
+        this.circle = circle;
         this.viewer = viewer;
         setRadius(radius);
         edit = new ChunkEdit() {
@@ -36,6 +40,11 @@ public abstract class Brush implements ClickReceiver {
     }
 
     @Override
+    public boolean isCircle() {
+        return circle;
+    }
+
+    @Override
     public int radius() {
         return radius;
     }
@@ -44,7 +53,7 @@ public abstract class Brush implements ClickReceiver {
     public void clicked(final int x, final int z) {
         for (int i = -radius * 2; i <= radius * 2; ++i) {
             for (int j = -radius * 2; j <= radius * 2; ++j) {
-                if (i * i + j * j > 4 * r2) {
+                if (circle && (i * i + j * j > 4 * r2)) {
                     continue;
                 }
                 final int posX = x + i;
