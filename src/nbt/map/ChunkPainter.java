@@ -15,8 +15,19 @@ import java.util.Set;
 
 import nbt.read.MapReader.Pair;
 
+/**
+ * The chunk painter paints chunks on an image and on the screen.
+ * 
+ * @author Joschi <josua.krause@googlemail.com>
+ */
 public class ChunkPainter {
 
+  /**
+   * Creates the image that is shown when a chunk is not loaded yet.
+   * 
+   * @param scale The scaling factor.
+   * @return The image.
+   */
   public static Image createLoadingImage(final double scale) {
     final BufferedImage loading = new BufferedImage((int) (scale * 16),
         (int) (scale * 16), BufferedImage.TYPE_INT_RGB);
@@ -39,6 +50,12 @@ public class ChunkPainter {
 
   private final Image loading;
 
+  /**
+   * Creates a chunk painter.
+   * 
+   * @param user The user that is notified when something changes.
+   * @param scale The scaling factor.
+   */
   public ChunkPainter(final UpdateReceiver user, final double scale) {
     this.user = user;
     this.scale = scale;
@@ -88,6 +105,9 @@ public class ChunkPainter {
 
   };
 
+  /**
+   * Polls the next chunk and draws its offscreen image.
+   */
   public void pollChunkAndDraw() {
     Chunk c;
     synchronized(chunksToDraw) {
@@ -99,6 +119,11 @@ public class ChunkPainter {
     somethingChanged();
   }
 
+  /**
+   * Getter.
+   * 
+   * @return Whether there are chunks waiting to be drawn.
+   */
   public boolean hasPendingChunks() {
     boolean b;
     synchronized(chunksToDraw) {
@@ -107,18 +132,33 @@ public class ChunkPainter {
     return !b;
   }
 
+  /**
+   * Waits for chunks to draw.
+   * 
+   * @throws InterruptedException If the thread is interrupted.
+   */
   public void waitOnDrawer() throws InterruptedException {
     synchronized(drawer) {
       drawer.wait();
     }
   }
 
+  /**
+   * Notifies that there are chunks to draw.
+   */
   public void notifyDrawer() {
     synchronized(drawer) {
       drawer.notify();
     }
   }
 
+  /**
+   * Draws a chunk on the screen.
+   * 
+   * @param g The graphics device.
+   * @param chunk The chunk.
+   * @param observer The image observer responsible for the graphics device.
+   */
   public void drawChunk(final Graphics2D g, final Chunk chunk,
       final ImageObserver observer) {
     if(chunk == null) {
@@ -145,10 +185,18 @@ public class ChunkPainter {
     g.drawImage(img, 0, 0, observer);
   }
 
+  /**
+   * Notifies the update receiver.
+   */
   public void somethingChanged() {
     user.somethingChanged();
   }
 
+  /**
+   * Removes the cached image of a chunk.
+   * 
+   * @param chunk The chunk to unload.
+   */
   public void unloadChunk(final Chunk chunk) {
     final Image img;
     synchronized(imgCache) {
@@ -159,6 +207,13 @@ public class ChunkPainter {
     }
   }
 
+  /**
+   * Whether the given position is visible in the graphics context.
+   * 
+   * @param g The graphics context.
+   * @param pos The position.
+   * @return Whether the position is visible.
+   */
   public boolean isValidPos(final Graphics2D g, final Pair pos) {
     final double x = scale(pos.x);
     final double z = scale(pos.z);
@@ -168,10 +223,22 @@ public class ChunkPainter {
         (int) rect.getWidth() + 2, (int) rect.getHeight() + 2);
   }
 
+  /**
+   * Unscales a coordinate.
+   * 
+   * @param coord The scaled coordinate.
+   * @return The coordinate.
+   */
   public double unscale(final double coord) {
     return coord / scale;
   }
 
+  /**
+   * Scales a coordinate.
+   * 
+   * @param coord The coordinate.
+   * @return The scaled coordinate.
+   */
   public double scale(final double coord) {
     return coord * scale;
   }

@@ -208,14 +208,20 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     g.setColor(getBackground());
     g.fill(r);
     g.translate(-offX, -offZ);
-    manager.reloadEntries(g, painter);
+    final Pair[] reloadEntries = manager.getReloadEntries();
+    for(final Pair pos : reloadEntries) {
+      if(painter.isValidPos(g, pos)) {
+        manager.needsReload(pos);
+      }
+    }
     final Pair[] chunksEntries = manager.getChunkEntries();
     boolean hasMid = false;
     double midX = 0;
     double midZ = 0;
     for(final Pair pos : chunksEntries) {
       final Chunk c = manager.getChunk(pos);
-      if(!manager.isVisible(c, g, pos, painter)) {
+      if(!painter.isValidPos(g, pos)) {
+        manager.mayUnload(c);
         continue;
       }
       manager.stayLoaded(c);
