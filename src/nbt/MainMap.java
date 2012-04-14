@@ -1,13 +1,25 @@
 package nbt;
 
-import java.io.IOException;
-
 import nbt.gui.MapFrame;
 
-public class MainMap {
+/**
+ * Starts the map editor. Arguments are ignored.
+ * 
+ * @author Joschi <josua.krause@googlemail.com>
+ */
+public final class MainMap {
 
-    public static void main(final String[] args) throws IOException {
-        new MapFrame().setVisible(true);
-    }
+  private MainMap() {
+    // no constructor
+  }
+
+  /**
+   * Starts the map editor.
+   * 
+   * @param args Ignored.
+   */
+  public static void main(final String[] args) {
+    new MapFrame().setVisible(true);
+  }
 
 }

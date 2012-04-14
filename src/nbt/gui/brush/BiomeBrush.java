@@ -8,38 +8,54 @@ import nbt.map.Biomes;
 import nbt.map.Chunk;
 import nbt.read.MapReader.Pair;
 
+/**
+ * The biome brush sets the biome of an area of the map.
+ * 
+ * @author Joschi <josua.krause@googlemail.com>
+ */
 public class BiomeBrush extends Brush {
 
-    private final Biomes biome;
+  private final Biomes biome;
 
-    public BiomeBrush(final MapViewer viewer, final int radius,
-            final Biomes biome) {
-        super(viewer, radius);
-        if (biome == null) {
-            throw new NullPointerException("biome");
-        }
-        this.biome = biome;
-    }
+  /**
+   * Creates a new biome brush.
+   * 
+   * @param viewer The associated viewer.
+   * @param radius The initial radius.
+   * @param biome The biome that the brush paints.
+   */
+  public BiomeBrush(final MapViewer viewer, final int radius,
+      final Biomes biome) {
+    super(viewer, radius);
+    if(biome == null) throw new NullPointerException("biome");
+    this.biome = biome;
+  }
 
-    @Override
-    public String name() {
-        return "Biome Setter: " + biome + " (" + radius() + ")";
-    }
+  @Override
+  public String name() {
+    return "Biome Setter: " + biome + " (" + radius() + ")";
+  }
 
-    @Override
-    protected void edit(final Chunk c, final Pair p) {
-        c.setBiome(p.x, p.z, biome);
-    }
+  @Override
+  protected void edit(final Chunk c, final Pair p) {
+    c.setBiome(p.x, p.z, biome);
+  }
 
-    public static BiomeBrush getBrushGUI(final JFrame frame,
-            final MapViewer viewer, final int radius) {
-        final Biomes b = (Biomes) JOptionPane.showInputDialog(frame,
-                "Choose the Biome", "Biome Brush", JOptionPane.PLAIN_MESSAGE,
-                null, Biomes.values(), null);
-        if (b == null) {
-            return null;
-        }
-        return new BiomeBrush(viewer, radius, b);
-    }
+  /**
+   * Opens a choose biome dialog to create the brush.
+   * 
+   * @param frame The parent window.
+   * @param viewer The map viewer.
+   * @param radius The initial radius.
+   * @return The brush.
+   */
+  public static BiomeBrush getBrushGUI(final JFrame frame,
+      final MapViewer viewer, final int radius) {
+    final Biomes b = (Biomes) JOptionPane.showInputDialog(frame,
+        "Choose the Biome", "Biome Brush", JOptionPane.PLAIN_MESSAGE,
+        null, Biomes.values(), null);
+    if(b == null) return null;
+    return new BiomeBrush(viewer, radius, b);
+  }
 
 }

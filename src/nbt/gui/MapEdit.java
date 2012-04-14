@@ -19,10 +19,16 @@ import javax.swing.event.ChangeListener;
 import nbt.gui.brush.BiomeBrush;
 import nbt.gui.brush.NoTopSnowBrush;
 
+/**
+ * The controller panel for the map editor.
+ * 
+ * @author Joschi <josua.krause@googlemail.com>
+ */
 public class MapEdit extends JPanel implements Controls {
 
   private static final long serialVersionUID = 8342464413305576303L;
 
+  /** The last opened map. */
   public static final File LAST = new File(".lastMap");
 
   private File file;
@@ -31,6 +37,12 @@ public class MapEdit extends JPanel implements Controls {
 
   private JSlider radius;
 
+  /**
+   * Creates a new panel.
+   * 
+   * @param v The map viewer.
+   * @param frame The window.
+   */
   public MapEdit(final MapViewer v, final MapFrame frame) {
     view = v;
     view.setControls(this);
@@ -58,19 +70,9 @@ public class MapEdit extends JPanel implements Controls {
               + "immediately and permanent!<br>"
               + "Proceed at your own risk!");
         }
-        final int returnVal = fc.showOpenDialog(MapEdit.this
-            .getParent());
+        final int returnVal = fc.showOpenDialog(MapEdit.this.getParent());
         if(returnVal != JFileChooser.APPROVE_OPTION) return;
-        file = fc.getSelectedFile();
-        try {
-          final PrintWriter pw = new PrintWriter(LAST, "UTF-8");
-          pw.println(file);
-          pw.close();
-        } catch(final IOException e) {
-          e.printStackTrace();
-        }
-        view.setFolder(file);
-        frame.setTitle(file, false);
+        setFile(fc.getSelectedFile(), frame);
       }
     }));
     add(new JButton(new AbstractAction("No Snow") {
@@ -79,7 +81,8 @@ public class MapEdit extends JPanel implements Controls {
 
       @Override
       public void actionPerformed(final ActionEvent e) {
-        view.setClickReceiver(new NoTopSnowBrush(view, radius.getValue()));
+        final MapViewer view = getView();
+        view.setClickReceiver(new NoTopSnowBrush(view, getRadius()));
       }
 
     }));
@@ -89,8 +92,8 @@ public class MapEdit extends JPanel implements Controls {
 
       @Override
       public void actionPerformed(final ActionEvent e) {
-        view.setClickReceiver(BiomeBrush.getBrushGUI(frame, view,
-            radius.getValue()));
+        final MapViewer view = getView();
+        view.setClickReceiver(BiomeBrush.getBrushGUI(frame, view, getRadius()));
       }
 
     }));
@@ -99,7 +102,7 @@ public class MapEdit extends JPanel implements Controls {
 
       @Override
       public void stateChanged(final ChangeEvent e) {
-        setRadius(radius.getValue());
+        setRadius(getRadius());
       }
 
     });
@@ -129,6 +132,43 @@ public class MapEdit extends JPanel implements Controls {
     if(clickReceiver == null) return;
     clickReceiver.setRadius(radius);
     view.repaint();
+  }
+
+  /**
+   * Getter.
+   * 
+   * @return The view.
+   */
+  public MapViewer getView() {
+    return view;
+  }
+
+  /**
+   * Getter.
+   * 
+   * @return The currently open file.
+   */
+  public File getFile() {
+    return file;
+  }
+
+  /**
+   * Setter.
+   * 
+   * @param file Sets the currently open file.
+   * @param frame The parent frame.
+   */
+  public void setFile(final File file, final MapFrame frame) {
+    this.file = file;
+    try {
+      final PrintWriter pw = new PrintWriter(LAST, "UTF-8");
+      pw.println(file);
+      pw.close();
+    } catch(final IOException e) {
+      e.printStackTrace();
+    }
+    view.setFolder(file);
+    frame.setTitle(file, false);
   }
 
 }

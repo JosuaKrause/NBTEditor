@@ -6,6 +6,11 @@ import nbt.map.Chunk;
 import nbt.map.ChunkEdit;
 import nbt.read.MapReader.Pair;
 
+/**
+ * Brushes paint on the map.
+ * 
+ * @author Joschi <josua.krause@googlemail.com>
+ */
 public abstract class Brush implements ClickReceiver {
 
   private final MapViewer viewer;
@@ -16,6 +21,12 @@ public abstract class Brush implements ClickReceiver {
 
   private int r2;
 
+  /**
+   * Creates a brush for a given map viewer.
+   * 
+   * @param viewer The viewer.
+   * @param radius The initial radius.
+   */
   public Brush(final MapViewer viewer, final int radius) {
     this.viewer = viewer;
     setRadius(radius);
@@ -55,6 +66,12 @@ public abstract class Brush implements ClickReceiver {
     viewer.editFinished();
   }
 
+  /**
+   * Edits a single column in a chunk.
+   * 
+   * @param c The chunk.
+   * @param posInChunk The position within the chunk.
+   */
   protected abstract void edit(Chunk c, Pair posInChunk);
 
 }

@@ -320,11 +320,25 @@ public class Chunk {
     return getBiomesArray().getAt(getBiomePosition(x, z));
   }
 
+  /**
+   * Setter.
+   * 
+   * @param x The x coordinate.
+   * @param z The z coordinate.
+   * @param biome Sets the biome at the given position.
+   */
   public void setBiome(final int x, final int z, final Biomes biome) {
     getBiomesArray().setAt(getBiomePosition(x, z), (byte) biome.id);
     changeAt(x, z);
   }
 
+  /**
+   * Gets the biome for the given position.
+   * 
+   * @param x The x coordinate.
+   * @param z The z coordinate.
+   * @return The biome.
+   */
   public Biomes getBiome(final int x, final int z) {
     return Biomes.getBlockForId(getBiomeFor(x, z));
   }
@@ -333,17 +347,37 @@ public class Chunk {
 
   private final Color[][] colors = new Color[16][16];
 
+  /**
+   * Flags a change in the column of the given position. The flag is removed by
+   * {@link #oneTimeHasChanged()}.
+   * 
+   * @param x The x position.
+   * @param z The z position.
+   */
   public void changeAt(final int x, final int z) {
     colors[x][z] = null;
     hasChanged = true;
   }
 
+  /**
+   * Checks whether the chunk has been changed and resets the change flag
+   * afterwards.
+   * 
+   * @return Whether the chunk has been changed.
+   */
   public boolean oneTimeHasChanged() {
     final boolean hc = hasChanged;
     hasChanged = false;
     return hc;
   }
 
+  /**
+   * Getter.
+   * 
+   * @param x The x position.
+   * @param z The y position.
+   * @return Gets the color for the given column.
+   */
   public Color getColorForColumn(final int x, final int z) {
     if(colors[x][z] == null) {
       int y = 0;
@@ -363,34 +397,58 @@ public class Chunk {
     if(alpha == 255) return add;
     if(alpha == 0) return old;
     final double a = alpha / 255.0;
-    final double r = old.getRed() * (1.0 - a) + add.getRed() * a;
-    final double g = old.getGreen() * (1.0 - a) + add.getGreen() * a;
-    final double b = old.getBlue() * (1.0 - a) + add.getBlue() * a;
+    final double am = 1.0 - a;
+    final double r = old.getRed() * am + add.getRed() * a;
+    final double g = old.getGreen() * am + add.getGreen() * a;
+    final double b = old.getBlue() * am + add.getBlue() * a;
     return new Color((int) r, (int) g, (int) b);
   }
 
   private final int xCache;
 
+  /**
+   * Getter.
+   * 
+   * @return Gets the x position of the chunk.
+   */
   public int getXPos() {
     return xCache;
   }
 
   private final int zCache;
 
+  /**
+   * Getter.
+   * 
+   * @return Gets the z position of the chunk.
+   */
   public int getZPos() {
     return zCache;
   }
 
+  /**
+   * Getter.
+   * 
+   * @return Gets the x position of the chunk in blocks.
+   */
   public int getX() {
     return getXPos() * 16;
   }
 
+  /**
+   * Getter.
+   * 
+   * @return Gets the z position of the chunk in blocks.
+   */
   public int getZ() {
     return getZPos() * 16;
   }
 
   private boolean active = true;
 
+  /**
+   * Unloads the chunk and saves changes to the file.
+   */
   public void unload() {
     if(active) {
       if(root.hasChanged()) {
