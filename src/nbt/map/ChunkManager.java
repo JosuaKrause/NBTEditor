@@ -33,6 +33,8 @@ public class ChunkManager {
 
   private final UpdateReceiver user;
 
+  private final Object reloaderLock = new Object();
+
   /**
    * Creates a chunk manager.
    * 
@@ -44,8 +46,10 @@ public class ChunkManager {
     reload = new HashMap<Pair, File>();
     otherPos = new HashMap<Pair, Pair>();
     mayUnload = new HashSet<Chunk>();
-    reloader.setDaemon(true);
-    reloader.start();
+    int numThreads = Math.max(Runtime.getRuntime().availableProcessors(), 2);
+    while(--numThreads >= 0) {
+      startOneReloaderThread();
+    }
   }
 
   private Thread iniLoader;
@@ -241,26 +245,34 @@ public class ChunkManager {
 
   private final Set<Pair> chunksToReload = new HashSet<Pair>();
 
-  private final Thread reloader = new Thread() {
+  /**
+   * Starts another reloader thread. Note that these threads may not be stopped
+   * manually. So be carefull how often you call this method.
+   */
+  private void startOneReloaderThread() {
+    final Thread res = new Thread() {
 
-    @Override
-    public void run() {
-      try {
-        while(!isInterrupted()) {
-          for(;;) {
-            if(hasContentToReload()) {
-              break;
+      @Override
+      public void run() {
+        try {
+          while(!isInterrupted()) {
+            for(;;) {
+              if(hasContentToReload()) {
+                break;
+              }
+              waitForReloader();
             }
-            waitForReloader();
+            reloadNext();
           }
-          reloadNext();
+        } catch(final InterruptedException e) {
+          interrupt();
         }
-      } catch(final InterruptedException e) {
-        interrupt();
       }
-    }
 
-  };
+    };
+    res.setDaemon(true);
+    res.start();
+  }
 
   /**
    * Getter.
@@ -295,8 +307,8 @@ public class ChunkManager {
    * @throws InterruptedException If the thread was interrupted.
    */
   public void waitForReloader() throws InterruptedException {
-    synchronized(reloader) {
-      reloader.wait();
+    synchronized(reloaderLock) {
+      reloaderLock.wait();
     }
   }
 
@@ -304,8 +316,8 @@ public class ChunkManager {
    * Notifies that a chunk is waiting to be reloaded.
    */
   public void notifyReloader() {
-    synchronized(reloader) {
-      reloader.notify();
+    synchronized(reloaderLock) {
+      reloaderLock.notifyAll();
     }
   }
 
