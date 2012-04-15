@@ -66,6 +66,7 @@ public class NBTEdit extends JPanel {
 
       @Override
       public void actionPerformed(final ActionEvent e) {
+        final JTextField text = getText();
         try {
           cur.parsePayload(text.getText());
         } catch(final ParseException ex) {
