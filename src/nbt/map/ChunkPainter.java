@@ -46,6 +46,8 @@ public class ChunkPainter {
 
   private final Map<Chunk, Image> imgCache = new HashMap<Chunk, Image>();
 
+  private final Object drawLock = new Object();
+
   private final UpdateReceiver user;
 
   private final Image loading;
@@ -60,8 +62,10 @@ public class ChunkPainter {
     this.user = user;
     this.scale = scale;
     loading = createLoadingImage(scale);
-    drawer.setDaemon(true);
-    drawer.start();
+    int numThreads = Math.max(Runtime.getRuntime().availableProcessors(), 2);
+    while(--numThreads >= 0) {
+      startOneImageThread();
+    }
   }
 
   private void drawChunk0(final Chunk chunk) {
@@ -84,26 +88,34 @@ public class ChunkPainter {
     }
   }
 
-  private final Thread drawer = new Thread() {
+  /**
+   * Starts another image thread. Note that these threads may not be stopped
+   * manually. So be careful how often you call this method.
+   */
+  private void startOneImageThread() {
+    final Thread t = new Thread() {
 
-    @Override
-    public void run() {
-      try {
-        while(!isInterrupted()) {
-          for(;;) {
-            if(hasPendingChunks()) {
-              break;
+      @Override
+      public void run() {
+        try {
+          while(!isInterrupted()) {
+            for(;;) {
+              if(hasPendingChunks()) {
+                break;
+              }
+              waitOnDrawer();
             }
-            waitOnDrawer();
+            pollChunkAndDraw();
           }
-          pollChunkAndDraw();
+        } catch(final InterruptedException e) {
+          interrupt();
         }
-      } catch(final InterruptedException e) {
-        interrupt();
       }
-    }
 
-  };
+    };
+    t.setDaemon(true);
+    t.start();
+  }
 
   /**
    * Polls the next chunk and draws its offscreen image.
@@ -138,8 +150,8 @@ public class ChunkPainter {
    * @throws InterruptedException If the thread is interrupted.
    */
   public void waitOnDrawer() throws InterruptedException {
-    synchronized(drawer) {
-      drawer.wait();
+    synchronized(drawLock) {
+      drawLock.wait();
     }
   }
 
@@ -147,8 +159,8 @@ public class ChunkPainter {
    * Notifies that there are chunks to draw.
    */
   public void notifyDrawer() {
-    synchronized(drawer) {
-      drawer.notify();
+    synchronized(drawLock) {
+      drawLock.notifyAll();
     }
   }
 

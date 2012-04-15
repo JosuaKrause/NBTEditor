@@ -247,10 +247,10 @@ public class ChunkManager {
 
   /**
    * Starts another reloader thread. Note that these threads may not be stopped
-   * manually. So be carefull how often you call this method.
+   * manually. So be careful how often you call this method.
    */
   private void startOneReloaderThread() {
-    final Thread res = new Thread() {
+    final Thread t = new Thread() {
 
       @Override
       public void run() {
@@ -270,8 +270,8 @@ public class ChunkManager {
       }
 
     };
-    res.setDaemon(true);
-    res.start();
+    t.setDaemon(true);
+    t.start();
   }
 
   /**
