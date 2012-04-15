@@ -311,6 +311,8 @@ public class ChunkManager {
 
   private final Set<Chunk> editedChunks = new HashSet<Chunk>();
 
+  private boolean multi;
+
   /**
    * Edits the given chunk with a chunk editor.
    * 
@@ -324,10 +326,25 @@ public class ChunkManager {
   }
 
   /**
+   * Sets the multi edit mode. In multi edit mode {@link #editFinished()} calls
+   * are no-ops. When the multi edit mode is set to <code>false</code> the real
+   * {@link #editFinished()} call is made.
+   * 
+   * @param multi Set multi edit mode.
+   */
+  public void setMultiedit(final boolean multi) {
+    this.multi = multi;
+    if(!multi) {
+      editFinished();
+    }
+  }
+
+  /**
    * Reports that the editing has finished and that the altered chunks should be
    * saved.
    */
   public void editFinished() {
+    if(multi) return;
     for(final Chunk c : editedChunks) {
       unloadChunk(c);
     }

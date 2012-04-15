@@ -11,6 +11,8 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.JComponent;
 
@@ -52,6 +54,10 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     painter = new ChunkPainter(this, scale);
     final MouseAdapter mouse = new MouseAdapter() {
 
+      private final List<Pair> clickList = new LinkedList<Pair>();
+
+      private boolean clicking;
+
       private boolean drag;
 
       private int tmpX;
@@ -64,9 +70,10 @@ public class MapViewer extends JComponent implements UpdateReceiver {
 
       @Override
       public void mousePressed(final MouseEvent e) {
-        if(e.getButton() == MouseEvent.BUTTON3) {
-          clickAt(e.getX(), e.getY());
-        } else if(e.getButton() == MouseEvent.BUTTON1) {
+        if(e.getButton() == MouseEvent.BUTTON3 && !drag) {
+          clickList.clear();
+          clicking = true;
+        } else if(e.getButton() == MouseEvent.BUTTON1 && !clicking) {
           tmpX = e.getX();
           tmpY = e.getY();
           tmpOffX = getXOffset();
@@ -82,6 +89,12 @@ public class MapViewer extends JComponent implements UpdateReceiver {
           final int z = e.getY();
           setOffset(x, z);
           setToolTipText(null);
+        }
+        if(clicking) {
+          final int x = e.getX();
+          final int z = e.getY();
+          selectAtScreen(x, z);
+          clickList.add(new Pair(x, z));
         }
       }
 
@@ -104,6 +117,14 @@ public class MapViewer extends JComponent implements UpdateReceiver {
           setOffset(x, z);
           drag = false;
         }
+        if(clicking) {
+          if(clickList.isEmpty()) {
+            clickList.add(new Pair(e.getX(), e.getY()));
+          }
+          multiEdit(clickList);
+          clickList.clear();
+          clicking = false;
+        }
       }
 
       @Override
@@ -121,6 +142,19 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     addMouseMotionListener(mouse);
     addMouseWheelListener(mouse);
     setBackground(Color.BLACK);
+  }
+
+  /**
+   * Performs a multi edit.
+   * 
+   * @param clickList The list of clicks.
+   */
+  protected void multiEdit(final List<Pair> clickList) {
+    manager.setMultiedit(true);
+    for(final Pair p : clickList) {
+      clickAt(p.x, p.z);
+    }
+    manager.setMultiedit(false);
   }
 
   /**
