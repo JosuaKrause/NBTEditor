@@ -66,16 +66,7 @@ public class NBTEdit extends JPanel {
 
       @Override
       public void actionPerformed(final ActionEvent e) {
-        final JTextField text = getText();
-        try {
-          cur.parsePayload(text.getText());
-        } catch(final ParseException ex) {
-          // record has not changed
-        }
-        final NBTRecord r = (NBTRecord) tree.getModel().getRoot();
-        tree.getModel().valueForPathChanged(new TreePath(r), r);
-        text.setText(cur.getParseablePayload());
-        frame.setTitle(getFile(), r.hasChanged());
+        edit(tree, frame);
       }
 
     };
@@ -123,7 +114,7 @@ public class NBTEdit extends JPanel {
         final NBTRecord r = (NBTRecord) tree.getModel().getRoot();
         if(!r.hasChanged()) return;
         try {
-          final NBTWriter write = new NBTWriter(file, wrapZip);
+          final NBTWriter write = new NBTWriter(file, wrapZip());
           write.write(r);
           write.close();
         } catch(final IOException e) {
@@ -141,22 +132,41 @@ public class NBTEdit extends JPanel {
 
       @Override
       public void valueChanged(final TreeSelectionEvent e) {
-        final JTextField text = getText();
-        path = e.getPath();
-        final NBTRecord r = (NBTRecord) path.getLastPathComponent();
-        final String n = r.getName();
-        name.setText(n != null ? n + ": " : " ");
-        if(r.isTextEditable()) {
-          text.setEnabled(true);
-          text.setText(r.getParseablePayload());
-        } else {
-          text.setText("");
-          text.setEnabled(false);
-        }
-        cur = r;
+        setPath(e.getPath());
       }
 
     });
+  }
+
+  public boolean wrapZip() {
+    return wrapZip;
+  }
+
+  public void edit(final JTree tree, final NBTFrame frame) {
+    try {
+      cur.parsePayload(text.getText());
+    } catch(final ParseException ex) {
+      // record has not changed
+    }
+    final NBTRecord r = (NBTRecord) tree.getModel().getRoot();
+    tree.getModel().valueForPathChanged(new TreePath(r), r);
+    text.setText(cur.getParseablePayload());
+    frame.setTitle(getFile(), r.hasChanged());
+  }
+
+  public void setPath(final TreePath p) {
+    path = p;
+    final NBTRecord r = (NBTRecord) path.getLastPathComponent();
+    final String n = r.getName();
+    name.setText(n != null ? n + ": " : " ");
+    if(r.isTextEditable()) {
+      text.setEnabled(true);
+      text.setText(r.getParseablePayload());
+    } else {
+      text.setText("");
+      text.setEnabled(false);
+    }
+    cur = r;
   }
 
   public static boolean hasExtension(final File file, final String... ext) {
@@ -234,10 +244,6 @@ public class NBTEdit extends JPanel {
 
   public File getFile() {
     return file;
-  }
-
-  public JTextField getText() {
-    return text;
   }
 
 }
