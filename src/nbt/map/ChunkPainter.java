@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import nbt.read.MapReader.Pair;
 
 /**
  * The chunk painter paints chunks on an image and on the screen.

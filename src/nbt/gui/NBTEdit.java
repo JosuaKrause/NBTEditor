@@ -26,8 +26,8 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import nbt.map.Chunk;
+import nbt.map.Pair;
 import nbt.read.MapReader;
-import nbt.read.MapReader.Pair;
 import nbt.read.NBTReader;
 import nbt.record.NBTRecord;
 import nbt.write.NBTWriter;

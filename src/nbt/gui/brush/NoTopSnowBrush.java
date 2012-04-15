@@ -3,8 +3,8 @@ package nbt.gui.brush;
 import nbt.gui.MapViewer;
 import nbt.map.Blocks;
 import nbt.map.Chunk;
+import nbt.map.Pair;
 import nbt.map.Chunk.Position;
-import nbt.read.MapReader.Pair;
 
 /**
  * This brush removes all snow and ice blocks that are at the top of a column.

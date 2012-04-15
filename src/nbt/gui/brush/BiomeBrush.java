@@ -6,7 +6,7 @@ import javax.swing.JOptionPane;
 import nbt.gui.MapViewer;
 import nbt.map.Biomes;
 import nbt.map.Chunk;
-import nbt.read.MapReader.Pair;
+import nbt.map.Pair;
 
 /**
  * The biome brush sets the biome of an area of the map.

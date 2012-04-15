@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import nbt.map.Pair;
 import nbt.record.NBTRecord;
 import nbt.write.NBTWriter;
 import net.minecraft.world.level.chunk.storage.RegionFile;
@@ -19,45 +20,6 @@ import net.minecraft.world.level.chunk.storage.RegionFile;
  * @author Joschi <josua.krause@googlemail.com>
  */
 public final class MapReader {
-
-  /**
-   * A immutable pair of two integers. Normally holding map coordinates.
-   * 
-   * @author Joschi <josua.krause@googlemail.com>
-   */
-  public static final class Pair {
-    /** The x coordinate. */
-    public final int x;
-    /** The z coordinate. */
-    public final int z;
-
-    /**
-     * Creates a pair.
-     * 
-     * @param x The x coordinate.
-     * @param z The z coordinate.
-     */
-    public Pair(final int x, final int z) {
-      this.x = x;
-      this.z = z;
-    }
-
-    @Override
-    public String toString() {
-      return "x: " + x + " z: " + z;
-    }
-
-    @Override
-    public int hashCode() {
-      return x * 31 + z;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-      final Pair p = (Pair) obj;
-      return p.x == x && p.z == z;
-    }
-  }
 
   private static final Map<File, MapReader> CACHE =
       new HashMap<File, MapReader>();

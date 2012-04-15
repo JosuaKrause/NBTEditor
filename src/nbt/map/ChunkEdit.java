@@ -1,6 +1,5 @@
 package nbt.map;
 
-import nbt.read.MapReader.Pair;
 
 /**
  * A chunk editor.

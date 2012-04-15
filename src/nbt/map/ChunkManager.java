@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 
 import nbt.read.MapReader;
-import nbt.read.MapReader.Pair;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 
 /**

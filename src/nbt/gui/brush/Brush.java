@@ -4,7 +4,7 @@ import nbt.gui.ClickReceiver;
 import nbt.gui.MapViewer;
 import nbt.map.Chunk;
 import nbt.map.ChunkEdit;
-import nbt.read.MapReader.Pair;
+import nbt.map.Pair;
 
 /**
  * Brushes paint on the map.

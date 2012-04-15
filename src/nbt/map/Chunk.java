@@ -8,7 +8,6 @@ import java.util.Map;
 
 import nbt.DynamicArray;
 import nbt.read.MapReader;
-import nbt.read.MapReader.Pair;
 import nbt.record.NBTByteArray;
 import nbt.record.NBTCompound;
 import nbt.record.NBTList;

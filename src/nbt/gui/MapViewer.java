@@ -29,9 +29,8 @@ import nbt.map.Chunk;
 import nbt.map.ChunkEdit;
 import nbt.map.ChunkManager;
 import nbt.map.ChunkPainter;
+import nbt.map.Pair;
 import nbt.map.UpdateReceiver;
-import nbt.read.MapReader;
-import nbt.read.MapReader.Pair;
 
 /**
  * The map viewer component. It shows a map and is interactable.
@@ -162,7 +161,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
    * @param clickList The list of clicks.
    */
   protected void multiEdit(final List<Pair> clickList) {
-    final List<Pair> cl = new ArrayList<MapReader.Pair>(clickList);
+    final List<Pair> cl = new ArrayList<Pair>(clickList);
     final ChunkManager manager = this.manager;
     final Waiter w = new Waiter(1500, frame);
     w.start();
