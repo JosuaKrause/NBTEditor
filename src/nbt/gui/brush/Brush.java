@@ -17,6 +17,8 @@ public abstract class Brush implements ClickReceiver {
 
   private final ChunkEdit edit;
 
+  private final boolean circle;
+
   private int radius;
 
   private int r2;
@@ -26,9 +28,11 @@ public abstract class Brush implements ClickReceiver {
    * 
    * @param viewer The viewer.
    * @param radius The initial radius.
+   * @param circle Whether the brush has a circular form.
    */
-  public Brush(final MapViewer viewer, final int radius) {
+  public Brush(final MapViewer viewer, final int radius, final boolean circle) {
     this.viewer = viewer;
+    this.circle = circle;
     setRadius(radius);
     edit = new ChunkEdit() {
 
@@ -64,6 +68,11 @@ public abstract class Brush implements ClickReceiver {
       }
     }
     viewer.editFinished();
+  }
+
+  @Override
+  public boolean isCircle() {
+    return circle;
   }
 
   /**

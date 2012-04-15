@@ -36,4 +36,11 @@ public interface ClickReceiver {
    */
   int radius();
 
+  /**
+   * Getter.
+   * 
+   * @return Whether the click receiver is a circle or a rectangle.
+   */
+  boolean isCircle();
+
 }

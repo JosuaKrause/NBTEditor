@@ -20,7 +20,7 @@ public class NoTopSnowBrush extends Brush {
    * @param radius The initial radius.
    */
   public NoTopSnowBrush(final MapViewer viewer, final int radius) {
-    super(viewer, radius);
+    super(viewer, radius, true);
   }
 
   @Override

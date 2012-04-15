@@ -125,6 +125,7 @@ public class ChunkPainter {
     Chunk c;
     synchronized(chunksToDraw) {
       final Iterator<Chunk> it = chunksToDraw.iterator();
+      if(!it.hasNext()) return;
       c = it.next();
       it.remove();
     }

@@ -295,6 +295,7 @@ public class ChunkManager {
     final Pair p;
     synchronized(chunksToReload) {
       final Iterator<Pair> it = chunksToReload.iterator();
+      if(!it.hasNext()) return;
       p = it.next();
       it.remove();
     }

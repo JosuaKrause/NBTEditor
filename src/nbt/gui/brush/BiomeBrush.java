@@ -26,7 +26,7 @@ public class BiomeBrush extends Brush {
    */
   public BiomeBrush(final MapViewer viewer, final int radius,
       final Biomes biome) {
-    super(viewer, radius);
+    super(viewer, radius, true);
     if(biome == null) throw new NullPointerException("biome");
     this.biome = biome;
   }

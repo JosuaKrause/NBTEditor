@@ -1,6 +1,8 @@
 package nbt.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -8,19 +10,27 @@ import java.awt.Shape;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JProgressBar;
+import javax.swing.WindowConstants;
 
 import nbt.map.Chunk;
 import nbt.map.ChunkEdit;
 import nbt.map.ChunkManager;
 import nbt.map.ChunkPainter;
 import nbt.map.UpdateReceiver;
+import nbt.read.MapReader;
 import nbt.read.MapReader.Pair;
 
 /**
@@ -95,6 +105,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
           final int z = e.getY();
           selectAtScreen(x, z);
           clickList.add(new Pair(x, z));
+          addSelectionShape(getClickReceiverShape(false), x, z);
         }
       }
 
@@ -124,6 +135,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
           multiEdit(clickList);
           clickList.clear();
           clicking = false;
+          clearSelectionShape();
         }
       }
 
@@ -150,11 +162,27 @@ public class MapViewer extends JComponent implements UpdateReceiver {
    * @param clickList The list of clicks.
    */
   protected void multiEdit(final List<Pair> clickList) {
-    manager.setMultiedit(true);
-    for(final Pair p : clickList) {
-      clickAt(p.x, p.z);
-    }
-    manager.setMultiedit(false);
+    final List<Pair> cl = new ArrayList<MapReader.Pair>(clickList);
+    final ChunkManager manager = this.manager;
+    final Waiter w = new Waiter(1500, frame);
+    w.start();
+    final Thread t = new Thread() {
+      @Override
+      public void run() {
+        manager.setMultiedit(true);
+        final double len = cl.size();
+        double num = 0;
+        for(final Pair p : cl) {
+          clickAt(p.x, p.z);
+          ++num;
+          w.progress(num / len);
+        }
+        manager.setMultiedit(false);
+        w.finish();
+        somethingChanged();
+      }
+    };
+    t.start();
   }
 
   /**
@@ -273,6 +301,82 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     manager.editChunk(c, p, editor);
   }
 
+  private final class Waiter extends Thread {
+
+    private final int timeMillis;
+
+    private final JFrame parent;
+
+    private JDialog frame;
+
+    private JProgressBar bar;
+
+    private volatile boolean finished;
+
+    public Waiter(final int timeMillis, final JFrame parent) {
+      this.timeMillis = timeMillis;
+      this.parent = parent;
+      setDaemon(true);
+    }
+
+    public void finish() {
+      finished = true;
+      synchronized(this) {
+        if(frame != null) {
+          frame.setVisible(false);
+          frame.dispose();
+          bar = null;
+          frame = null;
+          interrupt();
+        }
+      }
+    }
+
+    public void progress(final double r) {
+      final JProgressBar b = bar;
+      if(b != null) {
+        b.setIndeterminate(false);
+        b.setValue((int) (Math.round(r * 1000.0)));
+      }
+    }
+
+    @Override
+    public void run() {
+      try {
+        JDialog f = null;
+        synchronized(this) {
+          wait(timeMillis);
+          if(!finished) {
+            frame = createFrame();
+            f = frame;
+          }
+        }
+        if(f != null) {
+          f.setVisible(true);
+        }
+      } catch(final InterruptedException e) {
+        interrupt();
+      }
+    }
+
+    private JDialog createFrame() {
+      final JDialog res = new JDialog(parent);
+      res.setTitle("Processing brush action...");
+      bar = new JProgressBar(0, 1000);
+      bar.setIndeterminate(true);
+      bar.setPreferredSize(new Dimension(200, 50));
+      res.setLayout(new BorderLayout());
+      res.add(bar, BorderLayout.CENTER);
+      res.pack();
+      res.setLocationRelativeTo(parent);
+      res.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+      res.setResizable(false);
+      res.setModal(true);
+      return res;
+    }
+
+  }
+
   /**
    * Signals that an edit has finished.
    */
@@ -346,23 +450,68 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     if(hasMid) {
       final Graphics2D g2 = (Graphics2D) g.create();
       g2.translate(midX, midZ);
-      final Shape s;
-      if(clickReceiver != null) {
-        final double rad = clickReceiver.radius();
-        final double rad2 = painter.scale(rad * 2);
-        s =
-            new Ellipse2D.Double(painter.scale(selPos.x - rad),
-                painter.scale(selPos.z - rad), rad2, rad2);
-      } else {
-        final double len = painter.scale(1);
-        s =
-            new Rectangle2D.Double(painter.scale(selPos.x),
-                painter.scale(selPos.z), len, len);
-      }
       g2.setColor(new Color(0x80000000, true));
-      g2.fill(s);
+      g2.fill(getClickReceiverShape(true));
       g2.dispose();
     }
+    if(selectionShape != null) {
+      final Graphics2D g2 = (Graphics2D) g.create();
+      g2.setColor(new Color(0x80ff0000, true));
+      g2.fill(selectionShape);
+      g2.dispose();
+    }
+  }
+
+  private Area selectionShape;
+
+  /**
+   * Clears the selection shape and redraws.
+   */
+  public void clearSelectionShape() {
+    selectionShape = null;
+    somethingChanged();
+  }
+
+  /**
+   * Adds another shape to the selection shape.
+   * 
+   * @param s The shape.
+   * @param x The x position of the shape.
+   * @param z The z position of the shape.
+   */
+  public void addSelectionShape(final Shape s, final int x, final int z) {
+    final AffineTransform d =
+        AffineTransform.getTranslateInstance(offX + x, offZ + z);
+    final Area a = new Area(s);
+    a.transform(d);
+    if(selectionShape == null) {
+      selectionShape = a;
+    } else {
+      selectionShape.add(a);
+    }
+    somethingChanged();
+  }
+
+  /**
+   * Getter.
+   * 
+   * @param atSelection Whether the shape lies at the current selection.
+   * @return The shape of the currently installed click receiver or a single
+   *         pixel rectangle if no click receiver is installed.
+   */
+  public Shape getClickReceiverShape(final boolean atSelection) {
+    if(clickReceiver == null) {
+      final double len = painter.scale(1);
+      return new Rectangle2D.Double(painter.scale(atSelection ? selPos.x : 0),
+          painter.scale(atSelection ? selPos.z : 0), len, len);
+    }
+    final double rad = clickReceiver.radius();
+    final double rad2 = painter.scale(rad * 2);
+    final double x = painter.scale((atSelection ? selPos.x : 0) - rad);
+    final double z = painter.scale((atSelection ? selPos.z : 0) - rad);
+    return clickReceiver.isCircle()
+        ? new Ellipse2D.Double(x, z, rad2, rad2)
+        : new Rectangle2D.Double(x, z, rad2, rad2);
   }
 
   /**
