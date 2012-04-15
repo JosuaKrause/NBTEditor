@@ -63,6 +63,7 @@ public class ChunkPainter {
     this.scale = scale;
     loading = createLoadingImage(scale);
     int numThreads = Math.max(Runtime.getRuntime().availableProcessors(), 2);
+    System.out.println("Using " + numThreads + " image loader");
     while(--numThreads >= 0) {
       startOneImageThread();
     }

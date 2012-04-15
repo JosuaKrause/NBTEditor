@@ -47,6 +47,7 @@ public class ChunkManager {
     otherPos = new HashMap<Pair, Pair>();
     mayUnload = new HashSet<Chunk>();
     int numThreads = Math.max(Runtime.getRuntime().availableProcessors(), 2);
+    System.out.println("Using " + numThreads + " chunk reloader");
     while(--numThreads >= 0) {
       startOneReloaderThread();
     }
