@@ -21,6 +21,11 @@ import nbt.map.ChunkPainter;
 import nbt.map.UpdateReceiver;
 import nbt.read.MapReader.Pair;
 
+/**
+ * The map viewer component. It shows a map and is interactable.
+ * 
+ * @author Joschi <josua.krause@googlemail.com>
+ */
 public class MapViewer extends JComponent implements UpdateReceiver {
 
   private static final long serialVersionUID = 553314683721005657L;
@@ -35,6 +40,12 @@ public class MapViewer extends JComponent implements UpdateReceiver {
 
   private int offZ;
 
+  /**
+   * Creates a map viewer.
+   * 
+   * @param frame The parent frame.
+   * @param scale The scale of the map.
+   */
   public MapViewer(final MapFrame frame, final double scale) {
     this.frame = frame;
     manager = new ChunkManager(this);
@@ -112,10 +123,20 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     setBackground(Color.BLACK);
   }
 
+  /**
+   * Setter.
+   * 
+   * @param file The map folder.
+   */
   public void setFolder(final File file) {
     manager.setFolder(file);
   }
 
+  /**
+   * Changes the radius of the current click receiver.
+   * 
+   * @param amount The change amount.
+   */
   public void changeRadius(final int amount) {
     if(controls == null) return;
     int radius = controls.getRadius() + amount;
@@ -128,14 +149,30 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     controls.setRadius(radius);
   }
 
+  /**
+   * Getter.
+   * 
+   * @return The x offset of the map.
+   */
   public int getXOffset() {
     return offX;
   }
 
+  /**
+   * Getter.
+   * 
+   * @return The z offset of the map.
+   */
   public int getZOffset() {
     return offZ;
   }
 
+  /**
+   * Sets the offset of the map.
+   * 
+   * @param x The x offset.
+   * @param z The z offset.
+   */
   public void setOffset(final int x, final int z) {
     offX = x;
     offZ = z;
@@ -149,10 +186,22 @@ public class MapViewer extends JComponent implements UpdateReceiver {
 
   private Controls controls;
 
+  /**
+   * Setter.
+   * 
+   * @param controls Sets the controller for the brushes.
+   */
   public void setControls(final Controls controls) {
     this.controls = controls;
   }
 
+  /**
+   * Getter.
+   * 
+   * @param x The x position.
+   * @param z The z position.
+   * @return The chunk at the given position.
+   */
   protected Chunk getChunkAtScreen(final int x, final int z) {
     final int cx =
         (int) (painter.unscale(offX + x)) / 16 - (offX + x < 0 ? 1 : 0);
@@ -161,6 +210,13 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     return manager.getChunk(cx, cz);
   }
 
+  /**
+   * Getter.
+   * 
+   * @param x The x position.
+   * @param z The z position.
+   * @return The position within the chunk.
+   */
   public Pair getPosInChunkAtScreen(final int x, final int z) {
     final int cx = (int) (painter.unscale(offX + x)) % 16
         + (offX + x < 0 ? 15 : 0);
@@ -169,6 +225,13 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     return new Pair(cx, cz);
   }
 
+  /**
+   * Edits a column.
+   * 
+   * @param x The x coordinate.
+   * @param z The z coordinate.
+   * @param editor The editor.
+   */
   public void editChunk(final int x, final int z, final ChunkEdit editor) {
     final Chunk c = getChunkAtScreen(x, z);
     if(c == null) return;
@@ -176,6 +239,9 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     manager.editChunk(c, p, editor);
   }
 
+  /**
+   * Signals that an edit has finished.
+   */
   public void editFinished() {
     manager.editFinished();
   }
@@ -184,6 +250,12 @@ public class MapViewer extends JComponent implements UpdateReceiver {
 
   private Pair selPos;
 
+  /**
+   * Selects a screen coordinate.
+   * 
+   * @param x The x position.
+   * @param z The z position.
+   */
   public void selectAtScreen(final int x, final int z) {
     selChunk = getChunkAtScreen(x, z);
     selPos = getPosInChunkAtScreen(x, z);
@@ -259,6 +331,11 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     }
   }
 
+  /**
+   * Unloads a chunk.
+   * 
+   * @param chunk The chunk.
+   */
   protected void unloadChunk(final Chunk chunk) {
     painter.unloadChunk(chunk);
     if(selChunk == chunk) {
@@ -269,16 +346,32 @@ public class MapViewer extends JComponent implements UpdateReceiver {
 
   private ClickReceiver clickReceiver;
 
+  /**
+   * Setter.
+   * 
+   * @param cr Sets the click receiver.
+   */
   public void setClickReceiver(final ClickReceiver cr) {
     clickReceiver = cr;
     frame.setBrush(clickReceiver != null ? clickReceiver.name() : null);
     repaint();
   }
 
+  /**
+   * Getter.
+   * 
+   * @return The currently installed click receiver.
+   */
   public ClickReceiver getClickReceiver() {
     return clickReceiver;
   }
 
+  /**
+   * Clicks at a screen position.
+   * 
+   * @param x The x position.
+   * @param z The z position.
+   */
   public void clickAt(final int x, final int z) {
     if(clickReceiver != null) {
       clickReceiver.clicked(x, z);

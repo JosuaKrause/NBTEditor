@@ -33,10 +33,18 @@ import nbt.record.NBTRecord;
 import nbt.write.NBTWriter;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 
+/**
+ * The editor panel of the nbt editor.
+ * 
+ * @author Joschi <josua.krause@googlemail.com>
+ */
 public class NBTEdit extends JPanel {
 
   private static final long serialVersionUID = 6117715159789114581L;
 
+  /**
+   * The file for saving the last opened nbt file.
+   */
   public static final File LAST = new File(".lastNBT");
 
   private final JLabel name;
@@ -53,6 +61,12 @@ public class NBTEdit extends JPanel {
 
   private boolean canSave;
 
+  /**
+   * Creates a new nbt editor panel.
+   * 
+   * @param tree The tree.
+   * @param frame The underlying frame.
+   */
   public NBTEdit(final JTree tree, final NBTFrame frame) {
     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
     name = new JLabel(" ");
@@ -138,10 +152,21 @@ public class NBTEdit extends JPanel {
     });
   }
 
+  /**
+   * Getter.
+   * 
+   * @return Whether the currently open file has a zipped content.
+   */
   public boolean wrapZip() {
     return wrapZip;
   }
 
+  /**
+   * Edits the currently selected nbt record.
+   * 
+   * @param tree The tree.
+   * @param frame The frame.
+   */
   public void edit(final JTree tree, final NBTFrame frame) {
     try {
       cur.parsePayload(text.getText());
@@ -154,6 +179,11 @@ public class NBTEdit extends JPanel {
     frame.setTitle(getFile(), r.hasChanged());
   }
 
+  /**
+   * Sets the selection in the tree.
+   * 
+   * @param p The path.
+   */
   public void setPath(final TreePath p) {
     path = p;
     final NBTRecord r = (NBTRecord) path.getLastPathComponent();
@@ -169,6 +199,13 @@ public class NBTEdit extends JPanel {
     cur = r;
   }
 
+  /**
+   * Checks whether a file has one of the given extensions.
+   * 
+   * @param file The file.
+   * @param ext The extensions.
+   * @return Whether the file has such an extension.
+   */
   public static boolean hasExtension(final File file, final String... ext) {
     final String name = file.getName();
     for(final String e : ext) {
@@ -177,6 +214,13 @@ public class NBTEdit extends JPanel {
     return false;
   }
 
+  /**
+   * Sets the currently opened file.
+   * 
+   * @param file The file to open.
+   * @param tree The tree.
+   * @param frame The frame.
+   */
   public void setFile(final File file, final JTree tree, final NBTFrame frame) {
     this.file = file;
     try {
@@ -238,10 +282,20 @@ public class NBTEdit extends JPanel {
     }
   }
 
+  /**
+   * Getter.
+   * 
+   * @return Whether the file can be saved.
+   */
   public boolean canSave() {
     return canSave;
   }
 
+  /**
+   * Getter.
+   * 
+   * @return The currently open file.
+   */
   public File getFile() {
     return file;
   }

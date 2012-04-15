@@ -58,9 +58,10 @@ public class DynamicArray<T> implements Iterable<T> {
 
   @Override
   public Iterator<T> iterator() {
+    final Iterator<T> iter = content.iterator();
     return new Iterator<T>() {
 
-      private final Iterator<T> it = content.iterator();
+      private final Iterator<T> it = iter;
 
       private T next;
 
