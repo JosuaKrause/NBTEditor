@@ -4,22 +4,30 @@ import java.io.IOException;
 
 import nbt.write.ByteWriter;
 
-public class NBTEnd extends NBTRecord {
+/**
+ * The nbt end record signals the end of a compound list.
+ * 
+ * @author Joschi <josua.krause@googlemail.com>
+ */
+public final class NBTEnd extends NBTRecord {
 
-    private NBTEnd() {
-        super(NBTType.END, null);
-    }
+  private NBTEnd() {
+    super(NBTType.END, null);
+  }
 
-    public static final NBTEnd INSTANCE = new NBTEnd();
+  /**
+   * The only nbt end instance.
+   */
+  public static final NBTEnd INSTANCE = new NBTEnd();
 
-    @Override
-    public String getPayloadString() {
-        return "";
-    }
+  @Override
+  public String getPayloadString() {
+    return "";
+  }
 
-    @Override
-    public void writePayload(final ByteWriter out) throws IOException {
-        // nothing to do
-    }
+  @Override
+  public void writePayload(final ByteWriter out) throws IOException {
+    // nothing to do
+  }
 
 }

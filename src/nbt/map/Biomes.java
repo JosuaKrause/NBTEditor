@@ -2,94 +2,134 @@ package nbt.map;
 
 import nbt.DynamicArray;
 
+/**
+ * Represents the biome data of chunks.
+ * 
+ * @author Joschi <josua.krause@googlemail.com>
+ */
 public enum Biomes {
 
-    OCEAN(0, "Ocean"),
+  /** Ocean biome. */
+  OCEAN(0, "Ocean"),
 
-    PLAINS(1, "Plains"),
+  /** Plains biome. */
+  PLAINS(1, "Plains"),
 
-    DESERT(2, "Desert"),
+  /** Desert biome. */
+  DESERT(2, "Desert"),
 
-    EXT_HILLS(3, "Extreme Hills"),
+  /** Extreme hills biome. */
+  EXT_HILLS(3, "Extreme Hills"),
 
-    FOREST(4, "Forest"),
+  /** Forest biome. */
+  FOREST(4, "Forest"),
 
-    TAIGA(5, "Taiga"),
+  /** Taiga biome. */
+  TAIGA(5, "Taiga"),
 
-    SWAMP(6, "Swampland"),
+  /** Swamp biome. */
+  SWAMP(6, "Swampland"),
 
-    RIVER(7, "River"),
+  /** River biome. */
+  RIVER(7, "River"),
 
-    HELL(8, "Hell"),
+  /** Nether biome. */
+  HELL(8, "Hell"),
 
-    SKY(9, "Sky"),
+  /** End biome. */
+  SKY(9, "Sky"),
 
-    FROZEAN(10, "Frozen Ocean"),
+  /** Frozen ocean biome. */
+  FROZEAN(10, "Frozen Ocean"),
 
-    FRIVER(11, "Frozen River"),
+  /** Frozen river biome. */
+  FRIVER(11, "Frozen River"),
 
-    ICE_PLAINS(12, "Ice Plains"),
+  /** Ice plains biome. */
+  ICE_PLAINS(12, "Ice Plains"),
 
-    ICE_MOUNT(13, "Ice Mountains"),
+  /** Ice mountains biome. */
+  ICE_MOUNT(13, "Ice Mountains"),
 
-    MUSHR(14, "Mushroom Island"),
+  /** Mushroom island biome. */
+  MUSHR(14, "Mushroom Island"),
 
-    MUSHR_SHORE(15, "Mushroom Island Shore"),
+  /** Mushroom island shore biome. */
+  MUSHR_SHORE(15, "Mushroom Island Shore"),
 
-    BEACH(16, "Beach"),
+  /** Beach biome. */
+  BEACH(16, "Beach"),
 
-    DESERT_HILLS(17, "Desert Hills"),
+  /** Desert hills biome. */
+  DESERT_HILLS(17, "Desert Hills"),
 
-    FOREST_HILLS(18, "Forest Hills"),
+  /** Forest hills biome. */
+  FOREST_HILLS(18, "Forest Hills"),
 
-    TAIGA_HILLS(19, "Taiga Hills"),
+  /** Taiga hills biome. */
+  TAIGA_HILLS(19, "Taiga Hills"),
 
-    EXT_HILLS_EDGE(20, "Extreme Hills Edge"),
+  /** Extreme hills edge biome. */
+  EXT_HILLS_EDGE(20, "Extreme Hills Edge"),
 
-    JUNGLE(21, "Jungle"),
+  /** Jungle biome. */
+  JUNGLE(21, "Jungle"),
 
-    JUNGLE_HILLS(22, "Jungle Hills"),
+  /** Jungle hills biome. */
+  JUNGLE_HILLS(22, "Jungle Hills"),
 
-    DEFAULT_UNASSIGNED(-1, "Unassigned"),
+  /**
+   * Signals that a biome id is currently unassigned.
+   */
+  DEFAULT_UNASSIGNED(-1, "Unassigned"),
 
-    ;
+  /* end of declaration */;
 
-    public final int id;
+  /**
+   * The id of the biome.
+   */
+  public final int id;
 
-    public final String name;
+  /**
+   * The name of the biome.
+   */
+  public final String name;
 
-    private static final DynamicArray<Biomes> biomeMap;
+  private static final DynamicArray<Biomes> BIOME_MAP;
 
-    static {
-        final Biomes[] biomes = values();
-        biomeMap = new DynamicArray<Biomes>(biomes.length);
-        for (final Biomes biome : biomes) {
-            if (biome.id < 0) {
-                continue;
-            }
-            if (biomeMap.get(biome.id) != null) {
-                throw new InternalError("duplicate biome id: " + biome.id);
-            }
-            biomeMap.set(biome.id, biome);
-        }
+  static {
+    final Biomes[] biomes = values();
+    BIOME_MAP = new DynamicArray<Biomes>(biomes.length);
+    for(final Biomes biome : biomes) {
+      if(biome.id < 0) {
+        continue;
+      }
+      if(BIOME_MAP.get(biome.id) != null) throw new InternalError(
+          "duplicate biome id: " + biome.id);
+      BIOME_MAP.set(biome.id, biome);
     }
+  }
 
-    private Biomes(final int id, final String name) {
-        this.id = id;
-        this.name = name;
-    }
+  private Biomes(final int id, final String name) {
+    this.id = id;
+    this.name = name;
+  }
 
-    public static Biomes getBlockForId(final int id) {
-        if (id < 0) {
-            return DEFAULT_UNASSIGNED;
-        }
-        final Biomes biome = biomeMap.get(id);
-        return biome != null ? biome : DEFAULT_UNASSIGNED;
-    }
+  /**
+   * Getter.
+   * 
+   * @param id The biome id.
+   * @return Gets the biome for the given id.
+   */
+  public static Biomes getBlockForId(final int id) {
+    if(id < 0) return DEFAULT_UNASSIGNED;
+    final Biomes biome = BIOME_MAP.get(id);
+    return biome != null ? biome : DEFAULT_UNASSIGNED;
+  }
 
-    @Override
-    public String toString() {
-        return name;
-    }
+  @Override
+  public String toString() {
+    return name;
+  }
 
 }

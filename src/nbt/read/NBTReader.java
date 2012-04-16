@@ -10,23 +10,54 @@ import java.util.zip.GZIPInputStream;
 import nbt.record.NBTRecord;
 import nbt.record.NBTType;
 
+/**
+ * Reads a nbt file.
+ * 
+ * @author Joschi <josua.krause@googlemail.com>
+ */
 public class NBTReader extends PushBackReader {
 
-    public NBTReader(final File file) throws IOException {
-        this(file, true);
-    }
+  /**
+   * Creates a reader for a nbt file.
+   * 
+   * @param file The nbt file.
+   * @throws IOException I/O Exception.
+   */
+  public NBTReader(final File file) throws IOException {
+    this(file, true);
+  }
 
-    public NBTReader(final File file, final boolean wrapZip) throws IOException {
-        this(new BufferedInputStream(new FileInputStream(file)), wrapZip);
-    }
+  /**
+   * Creates a reader for a maybe zipped nbt file.
+   * 
+   * @param file The nbt file.
+   * @param wrapZip Whether the file is zipped or not.
+   * @throws IOException I/O Exception.
+   */
+  public NBTReader(final File file, final boolean wrapZip) throws IOException {
+    this(new BufferedInputStream(new FileInputStream(file)), wrapZip);
+  }
 
-    public NBTReader(final InputStream is, final boolean wrapZip)
-            throws IOException {
-        super(wrapZip ? new GZIPInputStream(is) : is);
-    }
+  /**
+   * Creates a reader for a maybe zipped nbt stream.
+   * 
+   * @param is The input stream.
+   * @param wrapZip Whether the file is zipped or not.
+   * @throws IOException I/O Exception.
+   */
+  public NBTReader(final InputStream is, final boolean wrapZip)
+      throws IOException {
+    super(wrapZip ? new GZIPInputStream(is) : is);
+  }
 
-    public NBTRecord read() throws IOException {
-        return NBTType.readRecord(this);
-    }
+  /**
+   * Reads the nbt stream.
+   * 
+   * @return The root record.
+   * @throws IOException I/O Exception.
+   */
+  public NBTRecord read() throws IOException {
+    return NBTType.readRecord(this);
+  }
 
 }
