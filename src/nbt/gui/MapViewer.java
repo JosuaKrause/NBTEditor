@@ -191,6 +191,9 @@ public class MapViewer extends JComponent implements UpdateReceiver {
    */
   public void setFolder(final File file) {
     manager.setFolder(file);
+    final Dimension size = getSize();
+    offX = -size.width / 2;
+    offZ = -size.height / 2;
   }
 
   /**
@@ -439,7 +442,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
       }
       final Graphics2D g2 = (Graphics2D) g.create();
       g2.translate(x, z);
-      painter.drawChunk(g2, c, this);
+      painter.drawChunk(g2, c);
       g2.dispose();
     }
     if(hasMid) {

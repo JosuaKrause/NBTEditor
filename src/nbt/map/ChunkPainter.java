@@ -6,13 +6,11 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
 
 /**
  * The chunk painter paints chunks on an image and on the screen.
@@ -170,12 +168,10 @@ public class ChunkPainter {
    * 
    * @param g The graphics device.
    * @param chunk The chunk.
-   * @param observer The image observer responsible for the graphics device.
    */
-  public void drawChunk(final Graphics2D g, final Chunk chunk,
-      final ImageObserver observer) {
+  public void drawChunk(final Graphics2D g, final Chunk chunk) {
     if(chunk == null) {
-      g.drawImage(loading, 0, 0, observer);
+      g.drawImage(loading, 0, 0, null);
       return;
     }
     boolean contains;
@@ -195,7 +191,7 @@ public class ChunkPainter {
     synchronized(imgCache) {
       img = imgCache.get(chunk);
     }
-    g.drawImage(img, 0, 0, observer);
+    g.drawImage(img, 0, 0, null);
   }
 
   /**

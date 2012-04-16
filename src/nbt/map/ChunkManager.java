@@ -171,10 +171,19 @@ public class ChunkManager {
   public static final double MEM_RATIO = 0.2;
 
   /**
-   * A token string to identify the early thrown out of memory error to avoid a
+   * A token error to identify the early thrown out of memory error to avoid a
    * real {@link OutOfMemoryError}.
    */
-  private static final String TOKEN = "nope";
+  private static final OutOfMemoryError OWN_MEM = new OutOfMemoryError() {
+
+    private static final long serialVersionUID = 4681032151041986450L;
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+      return this;
+    }
+
+  };
 
   private static volatile boolean beFriendly;
 
@@ -184,7 +193,7 @@ public class ChunkManager {
     final long free = r.freeMemory();
     final long max = r.maxMemory();
     final double ratio = (double) free / (double) max;
-    if(ratio <= MEM_RATIO) throw new OutOfMemoryError(TOKEN);
+    if(ratio <= MEM_RATIO) throw OWN_MEM;
   }
 
   /**
@@ -226,7 +235,7 @@ public class ChunkManager {
         if(canUnload) {
           beFriendly = false;
           handleFullMemory();
-        } else if(e.getMessage().equals(TOKEN)) {
+        } else if(e == OWN_MEM) {
           beFriendly = true;
         } else throw new Error(e);
       }
