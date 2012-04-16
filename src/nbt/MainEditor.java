@@ -1,13 +1,25 @@
 package nbt;
 
-import java.io.IOException;
-
 import nbt.gui.NBTFrame;
 
-public class MainEditor {
+/**
+ * Starts the nbt editor. Arguments are ignored.
+ * 
+ * @author Joschi <josua.krause@googlemail.com>
+ */
+public final class MainEditor {
 
-    public static void main(final String[] args) throws IOException {
-        new NBTFrame().setVisible(true);
-    }
+  private MainEditor() {
+    // no constructor
+  }
+
+  /**
+   * Starts the nbt editor.
+   * 
+   * @param args Ignored.
+   */
+  public static void main(final String[] args) {
+    new NBTFrame().setVisible(true);
+  }
 
 }

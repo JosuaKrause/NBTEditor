@@ -1,13 +1,38 @@
 package nbt.gui;
 
+/**
+ * Controls for the brush tools.
+ * 
+ * @author Joschi <josua.krause@googlemail.com>
+ */
 public interface Controls {
 
-    public int getMinRadius();
+  /**
+   * Getter.
+   * 
+   * @return The minimal radius.
+   */
+  int getMinRadius();
 
-    public int getMaxRadius();
+  /**
+   * Getter.
+   * 
+   * @return The maximal radius.
+   */
+  int getMaxRadius();
 
-    public void setRadius(int radius);
+  /**
+   * Setter.
+   * 
+   * @param radius Sets the radius of the brush.
+   */
+  void setRadius(int radius);
 
-    public int getRadius();
+  /**
+   * Getter.
+   * 
+   * @return The radius of the brush.
+   */
+  int getRadius();
 
 }
