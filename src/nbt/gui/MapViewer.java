@@ -51,6 +51,8 @@ public class MapViewer extends JComponent implements UpdateReceiver {
 
   private int offZ;
 
+  private boolean isLocked;
+
   /**
    * Creates a map viewer.
    * 
@@ -93,13 +95,14 @@ public class MapViewer extends JComponent implements UpdateReceiver {
 
       @Override
       public void mouseDragged(final MouseEvent e) {
-        if(drag) {
+        if(drag && !isLockedOffset()) {
           final int x = e.getX();
           final int z = e.getY();
           setOffset(x, z);
           setToolTipText(null);
         }
         if(clicking) {
+          setLockedOffset(true);
           final int x = e.getX();
           final int z = e.getY();
           selectAtScreen(x, z);
@@ -121,7 +124,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
 
       @Override
       public void mouseReleased(final MouseEvent e) {
-        if(drag) {
+        if(drag && !isLockedOffset()) {
           final int x = e.getX();
           final int z = e.getY();
           setOffset(x, z);
@@ -156,6 +159,24 @@ public class MapViewer extends JComponent implements UpdateReceiver {
   }
 
   /**
+   * Setter.
+   * 
+   * @param isLocked Whether the screen offset is locked.
+   */
+  protected void setLockedOffset(final boolean isLocked) {
+    this.isLocked = isLocked;
+  }
+
+  /**
+   * Getter.
+   * 
+   * @return Whether the screen offset is locked.
+   */
+  protected boolean isLockedOffset() {
+    return isLocked;
+  }
+
+  /**
    * Performs a multi edit.
    * 
    * @param clickList The list of clicks.
@@ -178,6 +199,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
         }
         manager.setMultiedit(false);
         w.finish();
+        setLockedOffset(false);
         somethingChanged();
       }
     };
@@ -238,6 +260,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
    * @param z The z offset.
    */
   public void setOffset(final int x, final int z) {
+    if(isLockedOffset()) return;
     offX = x;
     offZ = z;
     repaint();
@@ -325,8 +348,8 @@ public class MapViewer extends JComponent implements UpdateReceiver {
       finished = true;
       if(frame != null) {
         frame.setVisible(false);
-        frame.dispose();
         synchronized(this) {
+          frame.dispose();
           bar = null;
           frame = null;
           interrupt();
@@ -336,7 +359,8 @@ public class MapViewer extends JComponent implements UpdateReceiver {
 
     public void progress(final double r) {
       final JProgressBar b = bar;
-      if(b != null) {
+      final JDialog f = frame;
+      if(b != null && f != null && f.isVisible()) {
         b.setIndeterminate(false);
         b.setValue((int) (Math.round(r * 1000.0)));
       }
