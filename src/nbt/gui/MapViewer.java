@@ -320,10 +320,10 @@ public class MapViewer extends JComponent implements UpdateReceiver {
 
     public void finish() {
       finished = true;
-      synchronized(this) {
-        if(frame != null) {
-          frame.setVisible(false);
-          frame.dispose();
+      if(frame != null) {
+        frame.setVisible(false);
+        frame.dispose();
+        synchronized(this) {
           bar = null;
           frame = null;
           interrupt();
@@ -342,16 +342,12 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     @Override
     public void run() {
       try {
-        JDialog f = null;
         synchronized(this) {
           wait(timeMillis);
           if(!finished) {
             frame = createFrame();
-            f = frame;
+            frame.setVisible(true);
           }
-        }
-        if(f != null) {
-          f.setVisible(true);
         }
       } catch(final InterruptedException e) {
         interrupt();
