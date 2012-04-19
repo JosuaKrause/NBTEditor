@@ -1,11 +1,9 @@
-package nbt.map;
+package nbt.world;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 
-import nbt.read.NBTReader;
-import nbt.record.NBTRecord;
+import nbt.map.SerialChunkManager;
 
 /**
  * An interface to gather informations about a minecraft world.
@@ -13,21 +11,6 @@ import nbt.record.NBTRecord;
  * @author Joschi <josua.krause@googlemail.com>
  */
 public class World {
-
-  /**
-   * The file where level informations are stored.
-   */
-  public static final String LEVEL = "level.dat";
-
-  /**
-   * The extension of player nbt files.
-   */
-  public static final String PLAYER_EXT = ".dat";
-
-  /**
-   * The folder where player data is stored.
-   */
-  public static final String PLAYER = "players/";
 
   /**
    * The folder where the overworld map is stored.
@@ -50,11 +33,8 @@ public class World {
    * Creates a world from a given folder.
    * 
    * @param rootFolder The root folder of the world.
-   * @param multiPlayer Whether the world is a multi player world.
    */
-  public World(final File rootFolder, final boolean multiPlayer) {
-    if(!multiPlayer) throw new UnsupportedOperationException(
-        "single player not supported yet");
+  public World(final File rootFolder) {
     this.rootFolder = rootFolder;
   }
 
@@ -67,15 +47,29 @@ public class World {
     return rootFolder;
   }
 
+  private Level level;
+
   /**
    * Getter.
    * 
    * @return The root record of the level information nbt file.
    * @throws IOException I/O Exception.
    */
-  public NBTRecord getLevelDat() throws IOException {
-    final NBTReader reader = new NBTReader(new File(rootFolder, LEVEL));
-    return reader.read();
+  public Level getLevelDat() throws IOException {
+    if(level == null) {
+      level = new Level(rootFolder);
+    }
+    return level;
+  }
+
+  /**
+   * Getter.
+   * 
+   * @return Whether this world is a single player world.
+   * @throws IOException I/O Exception.
+   */
+  public boolean isSinglePlayer() throws IOException {
+    return getLevelDat().isSinglePlayer();
   }
 
   /**
@@ -85,32 +79,31 @@ public class World {
    * @return The root record of the player information nbt file.
    * @throws IOException I/O Exception.
    */
-  public NBTRecord getPlayer(final String name) throws IOException {
-    final File player = new File(rootFolder, PLAYER + name + PLAYER_EXT);
-    return new NBTReader(player).read();
+  public Player getPlayer(final String name) throws IOException {
+    if(isSinglePlayer()) throw new IllegalStateException(
+        "This world is a single player world!");
+    return new Player(rootFolder, name);
+  }
+
+  /**
+   * Getter.
+   * 
+   * @return The single player on a single player map.
+   * @throws IOException I/O Exception.
+   */
+  public Player getSinglePlayer() throws IOException {
+    return getLevelDat().getSinglePlayer();
   }
 
   /**
    * Getter.
    * 
    * @return A list of all players that have been connected to this world.
+   * @throws IOException I/O Exception.
    */
-  public String[] listPlayers() {
-    final File playerFolder = new File(rootFolder, PLAYER);
-    final String[] list = playerFolder.list(new FilenameFilter() {
-
-      @Override
-      public boolean accept(final File dir, final String name) {
-        return name.endsWith(PLAYER_EXT);
-      }
-
-    });
-    final String[] res = new String[list.length];
-    for(int i = 0; i < res.length; ++i) {
-      final String l = list[i];
-      res[i] = l.substring(0, l.length() - PLAYER_EXT.length());
-    }
-    return res;
+  public String[] listPlayers() throws IOException {
+    if(isSinglePlayer()) return new String[0];
+    return Player.listPlayers(rootFolder);
   }
 
   /**
