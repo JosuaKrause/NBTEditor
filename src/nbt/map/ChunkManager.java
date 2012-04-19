@@ -40,6 +40,7 @@ public class ChunkManager {
    * @param user The user that is notified when something changes.
    */
   public ChunkManager(final UpdateReceiver user) {
+    if(user == null) throw new NullPointerException("user");
     this.user = user;
     chunks = new HashMap<Pair, Chunk>();
     reload = new HashMap<Pair, File>();

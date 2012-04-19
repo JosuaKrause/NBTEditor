@@ -462,4 +462,12 @@ public class Chunk {
     }
   }
 
+  /**
+   * Makes the chunk unsaveable. All changes will be ignored when unloading the
+   * chunk.
+   */
+  public void noSave() {
+    active = false;
+  }
+
 }
