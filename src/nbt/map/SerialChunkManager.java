@@ -36,10 +36,13 @@ public class SerialChunkManager {
    * Setter.
    * 
    * @param folder The folder whose chunks are loaded.
+   * @param clearCache Whether to clear the map reader cache.
    */
-  public void setFolder(final File folder) {
+  public void setFolder(final File folder, final boolean clearCache) {
     chunks.clear();
-    MapReader.clearCache();
+    if(clearCache) {
+      MapReader.clearCache();
+    }
     final File[] files = folder.listFiles(new FileFilter() {
 
       @Override
