@@ -29,8 +29,10 @@ import nbt.map.Chunk;
 import nbt.map.ChunkEdit;
 import nbt.map.ChunkManager;
 import nbt.map.ChunkPainter;
-import nbt.map.Pair;
 import nbt.map.UpdateReceiver;
+import nbt.map.pos.InChunkPosition;
+import nbt.map.pos.OwnChunkPosition;
+import nbt.map.pos.ScreenPosition;
 
 /**
  * The map viewer component. It shows a map and is interactable.
@@ -65,7 +67,8 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     painter = new ChunkPainter(this, scale);
     final MouseAdapter mouse = new MouseAdapter() {
 
-      private final List<Pair> clickList = new LinkedList<Pair>();
+      private final List<ScreenPosition> clickList =
+          new LinkedList<ScreenPosition>();
 
       private boolean clicking;
 
@@ -106,7 +109,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
           final int x = e.getX();
           final int z = e.getY();
           selectAtScreen(x, z);
-          clickList.add(new Pair(x, z));
+          clickList.add(new ScreenPosition(x, z));
           addSelectionShape(getClickReceiverShape(false), x, z);
         }
       }
@@ -132,7 +135,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
         }
         if(clicking) {
           if(clickList.isEmpty()) {
-            clickList.add(new Pair(e.getX(), e.getY()));
+            clickList.add(new ScreenPosition(e.getX(), e.getY()));
           }
           multiEdit(clickList);
           clickList.clear();
@@ -181,8 +184,8 @@ public class MapViewer extends JComponent implements UpdateReceiver {
    * 
    * @param clickList The list of clicks.
    */
-  protected void multiEdit(final List<Pair> clickList) {
-    final List<Pair> cl = new ArrayList<Pair>(clickList);
+  protected void multiEdit(final List<ScreenPosition> clickList) {
+    final List<ScreenPosition> cl = new ArrayList<ScreenPosition>(clickList);
     final ChunkManager manager = this.manager;
     final Waiter w = new Waiter(1500, frame);
     w.start();
@@ -192,7 +195,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
         manager.setMultiedit(true);
         final double len = cl.size();
         double num = 0;
-        for(final Pair p : cl) {
+        for(final ScreenPosition p : cl) {
           clickAt(p.x, p.z);
           ++num;
           w.progress(num / len);
@@ -304,12 +307,12 @@ public class MapViewer extends JComponent implements UpdateReceiver {
    * @param z The z position.
    * @return The position within the chunk.
    */
-  public Pair getPosInChunkAtScreen(final int x, final int z) {
+  public InChunkPosition getPosInChunkAtScreen(final int x, final int z) {
     final int cx = (int) (painter.unscale(offX + x)) % 16
         + (offX + x < 0 ? 15 : 0);
     final int cz = (int) (painter.unscale(offZ + z)) % 16
         + (offZ + z < 0 ? 15 : 0);
-    return new Pair(cx, cz);
+    return new InChunkPosition(cx, cz);
   }
 
   /**
@@ -322,7 +325,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
   public void editChunk(final int x, final int z, final ChunkEdit editor) {
     final Chunk c = getChunkAtScreen(x, z);
     if(c == null) return;
-    final Pair p = getPosInChunkAtScreen(x, z);
+    final InChunkPosition p = getPosInChunkAtScreen(x, z);
     manager.editChunk(c, p, editor);
   }
 
@@ -408,7 +411,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
 
   private Chunk selChunk;
 
-  private Pair selPos;
+  private InChunkPosition selPos;
 
   /**
    * Selects a screen coordinate.
@@ -440,17 +443,17 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     g.setColor(getBackground());
     g.fill(r);
     g.translate(-offX, -offZ);
-    final Pair[] reloadEntries = manager.getReloadEntries();
-    for(final Pair pos : reloadEntries) {
+    final OwnChunkPosition[] reloadEntries = manager.getReloadEntries();
+    for(final OwnChunkPosition pos : reloadEntries) {
       if(painter.isValidPos(g, pos)) {
         manager.needsReload(pos);
       }
     }
-    final Pair[] chunksEntries = manager.getChunkEntries();
+    final OwnChunkPosition[] chunksEntries = manager.getChunkEntries();
     boolean hasMid = false;
     double midX = 0;
     double midZ = 0;
-    for(final Pair pos : chunksEntries) {
+    for(final OwnChunkPosition pos : chunksEntries) {
       final Chunk c = manager.getChunk(pos);
       if(!painter.isValidPos(g, pos)) {
         manager.mayUnload(c);

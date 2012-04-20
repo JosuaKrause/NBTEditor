@@ -1,5 +1,6 @@
 package nbt.map;
 
+import nbt.map.pos.InChunkPosition;
 
 /**
  * A chunk editor.
@@ -14,6 +15,6 @@ public interface ChunkEdit {
    * @param c The chunk.
    * @param posInChunk The position in the chunk.
    */
-  void edit(Chunk c, Pair posInChunk);
+  void edit(Chunk c, InChunkPosition posInChunk);
 
 }

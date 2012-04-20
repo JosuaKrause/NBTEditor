@@ -36,7 +36,7 @@ public final class MainCommandLine {
       } else {
         read = new NBTReader(new File(args[0]));
       }
-      final NBTRecord r = read.read();
+      final NBTRecord r = read.read(null);
       read.close();
       System.out.println(new IndentString().indent(r.getFullRepresentation()));
     } catch(final IOException io) {

@@ -8,6 +8,7 @@
   <property name="zipsrc" location="nbt_src.zip"/>
   <property name="gui" location="nbt_edit.jar"/>
   <property name="map" location="nbt_map.jar"/>
+  <property name="hc" location="ultrahc.jar"/>
   <!-- the actual targets -->
   <target name="compile">
     <mkdir dir="${bin}"/>
@@ -34,9 +35,18 @@
       </fileset>
       <fileset file="${license}" />
     </jar>
-  	<jar destfile="${gui}">
+  	<jar destfile="${map}">
       <manifest>
         <attribute name="Main-Class" value="nbt.MainMap"/>
+        <attribute name="Class-Path" value="."/>
+      </manifest>
+      <fileset dir="${bin}">
+      </fileset>
+      <fileset file="${license}" />
+    </jar>
+  	<jar destfile="${hc}">
+      <manifest>
+        <attribute name="Main-Class" value="nbt.MainHardcore"/>
         <attribute name="Class-Path" value="."/>
       </manifest>
       <fileset dir="${bin}">
