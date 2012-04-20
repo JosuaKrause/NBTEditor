@@ -7,7 +7,7 @@ import nbt.gui.MapViewer;
 import nbt.map.Biomes;
 import nbt.map.Blocks;
 import nbt.map.Chunk;
-import nbt.map.Pair;
+import nbt.map.pos.InChunkPosition;
 
 /**
  * Converts a part of a map into a dessert. That is every stone/dirt block over
@@ -43,7 +43,7 @@ public class DesertBrush extends Brush {
   public static final int START = 64;
 
   @Override
-  protected void edit(final Chunk c, final Pair posInChunk) {
+  protected void edit(final Chunk c, final InChunkPosition posInChunk) {
     final int x = posInChunk.x;
     final int z = posInChunk.z;
     for(int y = START; y <= Chunk.WORLD_HEIGHT; ++y) {

@@ -4,7 +4,7 @@ import nbt.gui.MapViewer;
 import nbt.map.Biomes;
 import nbt.map.Blocks;
 import nbt.map.Chunk;
-import nbt.map.Pair;
+import nbt.map.pos.InChunkPosition;
 
 /**
  * Replaces all blocks with air or water sources depending on height. This
@@ -30,7 +30,7 @@ public class WorldBorderBrush extends Brush {
   }
 
   @Override
-  protected void edit(final Chunk c, final Pair posInChunk) {
+  protected void edit(final Chunk c, final InChunkPosition posInChunk) {
     final int x = posInChunk.x;
     final int z = posInChunk.z;
     for(int y = 0; y <= Chunk.WORLD_HEIGHT; ++y) {

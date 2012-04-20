@@ -41,14 +41,14 @@ public class NBTModel implements TreeModel {
       final NBTCompound comp = (NBTCompound) parent;
       return comp.get(index);
     }
-    if(parent instanceof NBTList) return ((NBTList) parent).getAt(index);
+    if(parent instanceof NBTList) return ((NBTList<?>) parent).getAt(index);
     return null;
   }
 
   @Override
   public int getChildCount(final Object parent) {
     if(parent instanceof NBTCompound) return ((NBTCompound) parent).size();
-    if(parent instanceof NBTList) return ((NBTList) parent).getLength();
+    if(parent instanceof NBTList) return ((NBTList<?>) parent).getLength();
     return 0;
   }
 
@@ -61,7 +61,7 @@ public class NBTModel implements TreeModel {
   public int getIndexOfChild(final Object parent, final Object child) {
     final NBTRecord c = (NBTRecord) child;
     if(parent instanceof NBTCompound) return ((NBTCompound) parent).indexOf(c);
-    if(parent instanceof NBTList) return ((NBTList) parent).indexOf(c);
+    if(parent instanceof NBTList) return ((NBTList<?>) parent).indexOf(c);
     return -1;
   }
 

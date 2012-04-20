@@ -6,7 +6,7 @@ import javax.swing.JOptionPane;
 import nbt.gui.MapViewer;
 import nbt.map.Biomes;
 import nbt.map.Chunk;
-import nbt.map.Pair;
+import nbt.map.pos.InChunkPosition;
 
 /**
  * The biome brush sets the biome of an area of the map.
@@ -37,7 +37,7 @@ public class BiomeBrush extends Brush {
   }
 
   @Override
-  protected void edit(final Chunk c, final Pair p) {
+  protected void edit(final Chunk c, final InChunkPosition p) {
     c.setBiome(p.x, p.z, biome);
   }
 

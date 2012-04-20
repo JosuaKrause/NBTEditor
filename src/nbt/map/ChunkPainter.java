@@ -12,6 +12,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import nbt.map.pos.OwnChunkPosition;
+
 /**
  * The chunk painter paints chunks on an image and on the screen.
  * 
@@ -234,7 +236,7 @@ public class ChunkPainter {
    * @param pos The position.
    * @return Whether the position is visible.
    */
-  public boolean isValidPos(final Graphics2D g, final Pair pos) {
+  public boolean isValidPos(final Graphics2D g, final OwnChunkPosition pos) {
     final double x = scale(pos.x);
     final double z = scale(pos.z);
     final double len = scale(16);

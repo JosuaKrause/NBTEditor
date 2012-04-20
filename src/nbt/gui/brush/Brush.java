@@ -4,7 +4,7 @@ import nbt.gui.ClickReceiver;
 import nbt.gui.MapViewer;
 import nbt.map.Chunk;
 import nbt.map.ChunkEdit;
-import nbt.map.Pair;
+import nbt.map.pos.InChunkPosition;
 
 /**
  * Brushes paint on the map.
@@ -39,7 +39,7 @@ public abstract class Brush implements ClickReceiver {
     edit = new ChunkEdit() {
 
       @Override
-      public void edit(final Chunk c, final Pair posInChunk) {
+      public void edit(final Chunk c, final InChunkPosition posInChunk) {
         Brush.this.edit(c, posInChunk);
       }
 
@@ -85,6 +85,6 @@ public abstract class Brush implements ClickReceiver {
    * @param c The chunk.
    * @param posInChunk The position within the chunk.
    */
-  protected abstract void edit(Chunk c, Pair posInChunk);
+  protected abstract void edit(Chunk c, InChunkPosition posInChunk);
 
 }

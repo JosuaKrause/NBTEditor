@@ -15,9 +15,9 @@ public enum NBTType {
   /**
    * Signals the end of a compound.
    */
-  END(0) {
+  END(0, NBTEnd.class) {
     @Override
-    public NBTRecord read(final PushBackReader in, final String name)
+    public NBTEnd read(final PushBackReader in, final String name)
         throws IOException {
       return NBTEnd.INSTANCE;
     }
@@ -26,75 +26,75 @@ public enum NBTType {
   /**
    * A byte record.
    */
-  BYTE(1) { // signed byte
+  BYTE(1, NBTNumeric.class) { // signed byte
     @Override
-    public NBTRecord read(final PushBackReader in, final String name)
+    public NBTNumeric<Byte> read(final PushBackReader in, final String name)
         throws IOException {
-      return new NBTNumeric(BYTE, name, in.readByte());
+      return new NBTNumeric<Byte>(BYTE, name, in.readByte());
     }
   },
 
   /**
    * A short record.
    */
-  SHORT(2) { // signed short (big endian)
+  SHORT(2, NBTNumeric.class) { // signed short (big endian)
     @Override
-    public NBTRecord read(final PushBackReader in, final String name)
+    public NBTNumeric<Short> read(final PushBackReader in, final String name)
         throws IOException {
-      return new NBTNumeric(SHORT, name, in.readShort());
+      return new NBTNumeric<Short>(SHORT, name, in.readShort());
     }
   },
 
   /**
    * An integer record.
    */
-  INT(3) { // signed int (big endian)
+  INT(3, NBTNumeric.class) { // signed int (big endian)
     @Override
-    public NBTRecord read(final PushBackReader in, final String name)
+    public NBTNumeric<Integer> read(final PushBackReader in, final String name)
         throws IOException {
-      return new NBTNumeric(INT, name, in.readInt());
+      return new NBTNumeric<Integer>(INT, name, in.readInt());
     }
   },
 
   /**
    * A long record.
    */
-  LONG(4) { // signed long (big endian)
+  LONG(4, NBTNumeric.class) { // signed long (big endian)
     @Override
-    public NBTRecord read(final PushBackReader in, final String name)
+    public NBTNumeric<Long> read(final PushBackReader in, final String name)
         throws IOException {
-      return new NBTNumeric(LONG, name, in.readLong());
+      return new NBTNumeric<Long>(LONG, name, in.readLong());
     }
   },
 
   /**
    * A float record.
    */
-  FLOAT(5) { // float (big endian, IEEE 754-2008, binary32)
+  FLOAT(5, NBTNumeric.class) { // float (big endian, IEEE 754-2008, binary32)
     @Override
-    public NBTRecord read(final PushBackReader in, final String name)
+    public NBTNumeric<Float> read(final PushBackReader in, final String name)
         throws IOException {
-      return new NBTNumeric(FLOAT, name, in.readFloat());
+      return new NBTNumeric<Float>(FLOAT, name, in.readFloat());
     }
   },
 
   /**
    * A double record.
    */
-  DOUBLE(6) { // double (big endian, IEEE 754-2008, binary64)
+  DOUBLE(6, NBTNumeric.class) { // double (big endian, IEEE 754-2008, binary64)
     @Override
-    public NBTRecord read(final PushBackReader in, final String name)
+    public NBTNumeric<Double> read(final PushBackReader in, final String name)
         throws IOException {
-      return new NBTNumeric(DOUBLE, name, in.readDouble());
+      return new NBTNumeric<Double>(DOUBLE, name, in.readDouble());
     }
   },
 
   /**
    * A byte array record.
    */
-  BYTE_ARRAY(7) { // NBTType.Int length ++ array of bytes
+  BYTE_ARRAY(7, NBTByteArray.class) { // NBTType.Int length ++ array of bytes
     @Override
-    public NBTRecord read(final PushBackReader in, final String name)
+    public NBTByteArray read(final PushBackReader in, final String name)
         throws IOException {
       return new NBTByteArray(name, in.readByteArray());
     }
@@ -103,9 +103,9 @@ public enum NBTType {
   /**
    * A string record.
    */
-  STRING(8) { // NBTType.Short length ++ array of UTF-8 bytes
+  STRING(8, NBTString.class) { // NBTType.Short length ++ array of UTF-8 bytes
     @Override
-    public NBTRecord read(final PushBackReader in, final String name)
+    public NBTString read(final PushBackReader in, final String name)
         throws IOException {
       return new NBTString(name, in.readString());
     }
@@ -114,9 +114,9 @@ public enum NBTType {
   /**
    * A list record.
    */
-  LIST(9) { // NBTType.Byte tagId ++ NBTType.Int length ++ list
+  LIST(9, NBTList.class) { // NBTType.Byte tagId ++ NBTType.Int length ++ list
     @Override
-    public NBTRecord read(final PushBackReader in, final String name)
+    public NBTList<NBTRecord> read(final PushBackReader in, final String name)
         throws IOException {
       final NBTType type = forTagId(in.readByte());
       final int length = in.readInt();
@@ -124,16 +124,17 @@ public enum NBTType {
       for(int i = 0; i < length; ++i) {
         list[i] = type.read(in, null);
       }
-      return new NBTList(name, type, list);
+      return new NBTList<NBTRecord>(name, type, list);
     }
   },
 
   /**
    * A compound record.
    */
-  COMPOUND(10) { // list of (unique) named tags until NBTType.End
+  COMPOUND(10, NBTCompound.class) { // list of (unique) named tags until
+                                    // NBTType.End
     @Override
-    public NBTRecord read(final PushBackReader in, final String name)
+    public NBTCompound read(final PushBackReader in, final String name)
         throws IOException {
       NBTRecord cur;
       final List<NBTRecord> list = new ArrayList<NBTRecord>();
@@ -151,9 +152,9 @@ public enum NBTType {
   /**
    * An integer array record.
    */
-  INT_ARRAY(11) { // NBTType.Int length ++ array of integers
+  INT_ARRAY(11, NBTIntArray.class) { // NBTType.Int length ++ array of integers
     @Override
-    public NBTRecord read(final PushBackReader in, final String name)
+    public NBTIntArray read(final PushBackReader in, final String name)
         throws IOException {
       return new NBTIntArray(name, in.readIntArray());
     }
@@ -166,8 +167,14 @@ public enum NBTType {
    */
   public final byte byteValue;
 
-  private NBTType(final int byteValue) {
+  /**
+   * The associated type.
+   */
+  public final Class<? extends NBTRecord> type;
+
+  private NBTType(final int byteValue, final Class<? extends NBTRecord> type) {
     this.byteValue = (byte) byteValue;
+    this.type = type;
   }
 
   /**

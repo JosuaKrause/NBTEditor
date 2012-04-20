@@ -9,10 +9,11 @@ import nbt.write.ByteWriter;
  * A numerical value record.
  * 
  * @author Joschi <josua.krause@googlemail.com>
+ * @param <T> The number type.
  */
-public class NBTNumeric extends NBTRecord {
+public class NBTNumeric<T extends Number> extends NBTRecord {
 
-  private Number payload;
+  private T payload;
 
   /**
    * Creates a numerical value.
@@ -21,8 +22,7 @@ public class NBTNumeric extends NBTRecord {
    * @param name The name of the record.
    * @param payload The numerical value.
    */
-  public NBTNumeric(final NBTType type, final String name,
-      final Number payload) {
+  public NBTNumeric(final NBTType type, final String name, final T payload) {
     super(type, name);
     this.payload = payload;
   }
@@ -32,7 +32,7 @@ public class NBTNumeric extends NBTRecord {
    * 
    * @return The number.
    */
-  public Number getPayload() {
+  public T getPayload() {
     return payload;
   }
 
@@ -82,22 +82,22 @@ public class NBTNumeric extends NBTRecord {
     try {
       switch(getType()) {
         case BYTE:
-          payload = Byte.parseByte(str);
+          payload = (T) Byte.valueOf(str);
           break;
         case SHORT:
-          payload = Short.parseShort(str);
+          payload = (T) Short.valueOf(str);
           break;
         case INT:
-          payload = Integer.parseInt(str);
+          payload = (T) Integer.valueOf(str);
           break;
         case LONG:
-          payload = Long.parseLong(str);
+          payload = (T) Long.valueOf(str);
           break;
         case FLOAT:
-          payload = Float.parseFloat(str);
+          payload = (T) Float.valueOf(str);
           break;
         case DOUBLE:
-          payload = Double.parseDouble(str);
+          payload = (T) Double.valueOf(str);
           break;
         default:
           throw new InternalError("missing type? " + getType());

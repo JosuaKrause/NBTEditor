@@ -1,11 +1,11 @@
-package nbt.map;
+package nbt.map.pos;
 
 /**
  * A immutable pair of two integers. Normally holding map coordinates.
  * 
  * @author Joschi <josua.krause@googlemail.com>
  */
-public final class Pair {
+class Pair {
   /** The x coordinate. */
   public final int x;
   /** The z coordinate. */
