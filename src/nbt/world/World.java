@@ -106,16 +106,25 @@ public class World {
     return Player.listPlayers(rootFolder);
   }
 
+  private SerialChunkManager overworld;
+
+  private SerialChunkManager nether;
+
+  private SerialChunkManager endworld;
+
   /**
    * Getter.
    * 
    * @return The chunk manager for the overworld.
    */
   public SerialChunkManager getOverworld() {
-    final File world = new File(rootFolder, OVERWORLD);
-    final SerialChunkManager manager = new SerialChunkManager();
-    manager.setFolder(world, false);
-    return manager;
+    if(overworld == null) {
+      final File world = new File(rootFolder, OVERWORLD);
+      final SerialChunkManager manager = new SerialChunkManager();
+      manager.setFolder(world, false);
+      overworld = manager;
+    }
+    return overworld;
   }
 
   /**
@@ -124,10 +133,13 @@ public class World {
    * @return The chunk manager for the nether.
    */
   public SerialChunkManager getNether() {
-    final File nether = new File(rootFolder, NETHER);
-    final SerialChunkManager manager = new SerialChunkManager();
-    manager.setFolder(nether, false);
-    return manager;
+    if(nether == null) {
+      final File netherFile = new File(rootFolder, NETHER);
+      final SerialChunkManager manager = new SerialChunkManager();
+      manager.setFolder(netherFile, false);
+      nether = manager;
+    }
+    return nether;
   }
 
   /**
@@ -136,10 +148,13 @@ public class World {
    * @return The chunk manager for the end.
    */
   public SerialChunkManager getWorldEnd() {
-    final File worldEnd = new File(rootFolder, WORLD_END);
-    final SerialChunkManager manager = new SerialChunkManager();
-    manager.setFolder(worldEnd, false);
-    return manager;
+    if(endworld == null) {
+      final File worldEnd = new File(rootFolder, WORLD_END);
+      final SerialChunkManager manager = new SerialChunkManager();
+      manager.setFolder(worldEnd, false);
+      endworld = manager;
+    }
+    return endworld;
   }
 
 }
