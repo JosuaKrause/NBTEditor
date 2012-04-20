@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import nbt.map.pos.ChunkPosition;
+import nbt.map.pos.InChunkPosition;
+import nbt.map.pos.OwnChunkPosition;
 import nbt.read.MapReader;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 
@@ -17,19 +20,19 @@ import net.minecraft.world.level.chunk.storage.RegionFile;
  */
 public class SerialChunkManager {
 
-  private final Map<Pair, Chunk> chunks;
+  private final Map<OwnChunkPosition, Chunk> chunks;
 
-  private final Map<Pair, File> reload;
+  private final Map<OwnChunkPosition, File> reload;
 
-  private final Map<Pair, Pair> otherPos;
+  private final Map<OwnChunkPosition, ChunkPosition> otherPos;
 
   /**
    * Creates a serial chunk manager.
    */
   public SerialChunkManager() {
-    chunks = new HashMap<Pair, Chunk>();
-    reload = new HashMap<Pair, File>();
-    otherPos = new HashMap<Pair, Pair>();
+    chunks = new HashMap<OwnChunkPosition, Chunk>();
+    reload = new HashMap<OwnChunkPosition, File>();
+    otherPos = new HashMap<OwnChunkPosition, ChunkPosition>();
   }
 
   /**
@@ -54,9 +57,9 @@ public class SerialChunkManager {
     });
     for(final File f : files) {
       final MapReader r = MapReader.getForFile(f);
-      final List<Pair> chunkList = r.getChunks();
-      for(final Pair p : chunkList) {
-        final Chunk chunk = new Chunk(r.read(p.x, p.z), f, p);
+      final List<ChunkPosition> chunkList = r.getChunks();
+      for(final ChunkPosition p : chunkList) {
+        final Chunk chunk = new Chunk(r.read(p), f, p);
         unloadChunk(chunk);
       }
     }
@@ -68,7 +71,7 @@ public class SerialChunkManager {
    * @param chunk The chunk to unload.
    */
   public void unloadChunk(final Chunk chunk) {
-    final Pair pos = chunk.getPos();
+    final OwnChunkPosition pos = chunk.getPos();
     chunks.remove(pos);
     reload.put(pos, chunk.getFile());
     otherPos.put(pos, chunk.getOtherPos());
@@ -98,7 +101,7 @@ public class SerialChunkManager {
    * @return The chunk.
    */
   private Chunk getChunk0(final int x, final int z) {
-    return getChunk(new Pair(x * 16, z * 16));
+    return getChunk(new OwnChunkPosition(x * 16, z * 16));
   }
 
   /**
@@ -107,7 +110,7 @@ public class SerialChunkManager {
    * @param pos The position.
    * @return The chunk at the given position.
    */
-  private Chunk getChunk(final Pair pos) {
+  private Chunk getChunk(final OwnChunkPosition pos) {
     if(!chunks.containsKey(pos)) {
       reloadChunk(pos);
     }
@@ -119,12 +122,12 @@ public class SerialChunkManager {
    * 
    * @param pos The position of the chunk.
    */
-  private void reloadChunk(final Pair pos) {
+  private void reloadChunk(final OwnChunkPosition pos) {
     final File f = reload.get(pos);
     if(f == null) return;
-    final Pair op = otherPos.get(pos);
+    final ChunkPosition op = otherPos.get(pos);
     final MapReader r = MapReader.getForFile(f);
-    final Chunk chunk = new Chunk(r.read(op.x, op.z), f, op);
+    final Chunk chunk = new Chunk(r.read(op), f, op);
     chunks.put(pos, chunk);
     reload.remove(pos);
     otherPos.remove(pos);
@@ -137,10 +140,10 @@ public class SerialChunkManager {
    * @param z The world z position.
    * @return The position in the chunk.
    */
-  public Pair getPosInChunk(final int x, final int z) {
+  public InChunkPosition getPosInChunk(final int x, final int z) {
     final int cx = x % 16 + (x < 0 ? 15 : 0);
     final int cz = z % 16 + (z < 0 ? 15 : 0);
-    return new Pair(cx, cz);
+    return new InChunkPosition(cx, cz);
   }
 
 }

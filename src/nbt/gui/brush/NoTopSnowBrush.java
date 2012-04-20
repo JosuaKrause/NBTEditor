@@ -3,8 +3,8 @@ package nbt.gui.brush;
 import nbt.gui.MapViewer;
 import nbt.map.Blocks;
 import nbt.map.Chunk;
-import nbt.map.Pair;
-import nbt.map.Chunk.Position;
+import nbt.map.pos.InChunkPosition;
+import nbt.map.pos.Position3D;
 
 /**
  * This brush removes all snow and ice blocks that are at the top of a column.
@@ -29,8 +29,8 @@ public class NoTopSnowBrush extends Brush {
   }
 
   @Override
-  protected void edit(final Chunk c, final Pair p) {
-    final Position pos = c.getTopNonAirBlock(p.x, p.z);
+  protected void edit(final Chunk c, final InChunkPosition p) {
+    final Position3D pos = c.getTopNonAirBlock(p.x, p.z);
     final Blocks b = c.getBlock(pos);
     switch(b) {
       case SNOW:

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nbt.map.Pair;
+import nbt.map.pos.ChunkPosition;
 import nbt.record.NBTCompound;
 import nbt.record.NBTRecord;
 import nbt.record.NBTType;
@@ -61,8 +61,8 @@ public final class MapReader {
    * 
    * @return Creates a list of chunks in this region file.
    */
-  public synchronized List<Pair> getChunks() {
-    final List<Pair> res = new ArrayList<Pair>();
+  public synchronized List<ChunkPosition> getChunks() {
+    final List<ChunkPosition> res = new ArrayList<ChunkPosition>();
     try {
       for(int x = 0; x < 32; x++) {
         for(int z = 0; z < 32; z++) {
@@ -73,7 +73,7 @@ public final class MapReader {
               System.err.println("Failed to fetch input stream");
               continue;
             }
-            res.add(new Pair(x, z));
+            res.add(new ChunkPosition(x, z));
             regionChunkInputStream.close();
           }
         }
@@ -87,16 +87,15 @@ public final class MapReader {
   /**
    * Reads a chunk record.
    * 
-   * @param x The x position of the chunk.
-   * @param z The z position of the chunk.
+   * @param pos The position of the chunk.
    * @return The record.
    */
-  public synchronized NBTCompound read(final int x, final int z) {
+  public synchronized NBTCompound read(final ChunkPosition pos) {
     NBTCompound rec = null;
     try {
-      if(regionSource.hasChunk(x, z)) {
+      if(regionSource.hasChunk(pos.x, pos.z)) {
         final DataInputStream regionChunkInputStream =
-            regionSource.getChunkDataInputStream(x, z);
+            regionSource.getChunkDataInputStream(pos.x, pos.z);
         if(regionChunkInputStream == null) throw new IOException(
             "Failed to fetch input stream");
         final NBTReader r = new NBTReader(regionChunkInputStream, false);

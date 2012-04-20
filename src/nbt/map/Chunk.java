@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nbt.DynamicArray;
+import nbt.map.pos.ChunkPosition;
+import nbt.map.pos.OwnChunkPosition;
+import nbt.map.pos.Position3D;
 import nbt.read.MapReader;
 import nbt.record.NBTByteArray;
 import nbt.record.NBTCompound;
@@ -32,7 +35,7 @@ public class Chunk {
 
   private final File file;
 
-  private final Pair otherPos;
+  private final ChunkPosition otherPos;
 
   /**
    * Creates a chunk from a given record.
@@ -41,7 +44,8 @@ public class Chunk {
    * @param file The associated file.
    * @param otherPos The position of the map file.
    */
-  public Chunk(final NBTCompound root, final File file, final Pair otherPos) {
+  public Chunk(final NBTCompound root, final File file,
+      final ChunkPosition otherPos) {
     final boolean validExt =
         file.getName().endsWith(RegionFile.ANVIL_EXTENSION);
     if(!validExt) throw new IllegalArgumentException(
@@ -65,7 +69,7 @@ public class Chunk {
    * 
    * @return Gets the position of the map file.
    */
-  public Pair getOtherPos() {
+  public ChunkPosition getOtherPos() {
     return otherPos;
   }
 
@@ -74,8 +78,8 @@ public class Chunk {
    * 
    * @return Gets the position of the chunk.
    */
-  public Pair getPos() {
-    return new Pair(getX(), getZ());
+  public OwnChunkPosition getPos() {
+    return new OwnChunkPosition(getX(), getZ());
   }
 
   /**
@@ -204,7 +208,7 @@ public class Chunk {
    * @param pos The position.
    * @return The block at the given position.
    */
-  public Blocks getBlock(final Position pos) {
+  public Blocks getBlock(final Position3D pos) {
     return getBlock(pos.x, pos.y, pos.z);
   }
 
@@ -226,7 +230,7 @@ public class Chunk {
    * @param pos The position.
    * @param b The block to set at the given position.
    */
-  public void setBlock(final Position pos, final Blocks b) {
+  public void setBlock(final Position3D pos, final Blocks b) {
     setBlock(pos.x, pos.y, pos.z, b);
   }
 
@@ -243,33 +247,6 @@ public class Chunk {
   }
 
   /**
-   * Defines a 3d position within a chunk.
-   * 
-   * @author Joschi <josua.krause@googlemail.com>
-   */
-  public static final class Position {
-    /** The x coordinate. */
-    public final int x;
-    /** The y coordinate. */
-    public final int y;
-    /** The z coordinate. */
-    public final int z;
-
-    /**
-     * Creates a position.
-     * 
-     * @param x The x coordinate.
-     * @param y The y coordinate.
-     * @param z The z coordinate.
-     */
-    public Position(final int x, final int y, final int z) {
-      this.x = x;
-      this.y = y;
-      this.z = z;
-    }
-  }
-
-  /**
    * Gets the topmost non air block. Remember that vines etc. are non air blocks
    * too.
    * 
@@ -277,15 +254,15 @@ public class Chunk {
    * @param z The z coordinate.
    * @return The Position of the topmost non air block.
    */
-  public Position getTopNonAirBlock(final int x, final int z) {
+  public Position3D getTopNonAirBlock(final int x, final int z) {
     int y = WORLD_HEIGHT;
     while(hasBlockFor(y)) {
-      if(getBlock(x, y, z) != Blocks.AIR) return new Position(x, y, z);
+      if(getBlock(x, y, z) != Blocks.AIR) return new Position3D(x, y, z);
       --y;
     }
     // actually never really happens
     // but when it does we return an air block
-    return new Position(x, y, z);
+    return new Position3D(x, y, z);
   }
 
   /**
