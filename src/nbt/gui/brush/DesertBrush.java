@@ -45,7 +45,7 @@ public class DesertBrush extends Brush {
 
   @Override
   protected void edit(final Chunk c, final InChunkPosition posInChunk) {
-    for(int y = START; y <= Chunk.WORLD_HEIGHT; ++y) {
+    for(int y = START; y <= Chunk.WORLD_MAX_Y; ++y) {
       if(!c.hasBlockFor(y)) {
         continue;
       }

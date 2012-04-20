@@ -32,8 +32,8 @@ public class WorldBorderBrush extends Brush {
 
   @Override
   protected void edit(final Chunk c, final InChunkPosition posInChunk) {
-    for(int y = 0; y <= Chunk.WORLD_HEIGHT; ++y) {
-      if(!c.canSetBlock(y)) {
+    for(int y = 0; y <= Chunk.WORLD_MAX_Y; ++y) {
+      if(!c.canEdit(y)) {
         continue;
       }
       final Position3D pos = new Position3D(posInChunk, y);
