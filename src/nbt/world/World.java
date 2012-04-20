@@ -3,7 +3,9 @@ package nbt.world;
 import java.io.File;
 import java.io.IOException;
 
+import nbt.map.Chunk;
 import nbt.map.SerialChunkManager;
+import nbt.map.pos.WorldPosition;
 
 /**
  * An interface to gather informations about a minecraft world.
@@ -11,6 +13,30 @@ import nbt.map.SerialChunkManager;
  * @author Joschi <josua.krause@googlemail.com>
  */
 public class World {
+
+  /**
+   * Represents one of the game dimensions.
+   * 
+   * @author Joschi <josua.krause@googlemail.com>
+   */
+  public static enum WorldDimension {
+    /**
+     * The overworld.
+     */
+    OVERWORLD,
+
+    /**
+     * The nether.
+     */
+    NETHER,
+
+    /**
+     * The end.
+     */
+    END,
+
+    /* end of declaration */;
+  }
 
   /**
    * The folder where the overworld map is stored.
@@ -98,7 +124,8 @@ public class World {
   /**
    * Getter.
    * 
-   * @return A list of all players that have been connected to this world.
+   * @return A list of all players that have been connected to this world. This
+   *         method only returns names in multi-player worlds.
    * @throws IOException I/O Exception.
    */
   public String[] listPlayers() throws IOException {
@@ -107,15 +134,88 @@ public class World {
   }
 
   /**
+   * Gets a list of all players in this world. If not all players are accessed
+   * {@link #listPlayers()} is a more efficient alternative.
+   * 
+   * @return All players that have been connected to this world or the player in
+   *         the single player world.
+   * @throws IOException I/O Exception.
+   */
+  public Player[] getPlayers() throws IOException {
+    if(isSinglePlayer()) return new Player[] { getSinglePlayer()};
+    final String[] names = listPlayers();
+    final Player[] res = new Player[names.length];
+    for(int i = 0; i < names.length; ++i) {
+      res[i] = getPlayer(names[i]);
+    }
+    return res;
+  }
+
+  /**
+   * Getter.
+   * 
+   * @param dim The dimension.
+   * @return The chunk manager for the given dimension.
+   */
+  public SerialChunkManager getDimension(final WorldDimension dim) {
+    switch(dim) {
+      case OVERWORLD:
+        return getOverworld();
+      case NETHER:
+        return getNether();
+      case END:
+        return getWorldEnd();
+    }
+    throw new InternalError();
+  }
+
+  /**
+   * Tests whether a chunk in a given dimension exists.
+   * 
+   * @param pos The position.
+   * @param dim The dimension.
+   * @return Whether the chunk at the given position exists.
+   */
+  public boolean chunkExists(final WorldPosition pos, final WorldDimension dim) {
+    return getDimension(dim).existChunk(pos);
+  }
+
+  /**
+   * Getter.
+   * 
+   * @param pos The position.
+   * @param dim The dimension.
+   * @return The topmost non-air height at the given position.
+   */
+  public int getTopMostPosition(final WorldPosition pos,
+      final WorldDimension dim) {
+    final SerialChunkManager scm = getDimension(dim);
+    final Chunk chunk = scm.getChunk(pos);
+    if(chunk == null) throw new IllegalStateException("chunk does not exist");
+    final int res = chunk.getTopNonAirBlock(pos.getPosInChunk()).y;
+    scm.unloadChunk(chunk);
+    return res;
+  }
+
+  private SerialChunkManager overworld;
+
+  private SerialChunkManager nether;
+
+  private SerialChunkManager endworld;
+
+  /**
    * Getter.
    * 
    * @return The chunk manager for the overworld.
    */
   public SerialChunkManager getOverworld() {
-    final File world = new File(rootFolder, OVERWORLD);
-    final SerialChunkManager manager = new SerialChunkManager();
-    manager.setFolder(world, false);
-    return manager;
+    if(overworld == null) {
+      final File world = new File(rootFolder, OVERWORLD);
+      final SerialChunkManager manager = new SerialChunkManager();
+      manager.setFolder(world, false);
+      overworld = manager;
+    }
+    return overworld;
   }
 
   /**
@@ -124,10 +224,13 @@ public class World {
    * @return The chunk manager for the nether.
    */
   public SerialChunkManager getNether() {
-    final File nether = new File(rootFolder, NETHER);
-    final SerialChunkManager manager = new SerialChunkManager();
-    manager.setFolder(nether, false);
-    return manager;
+    if(nether == null) {
+      final File netherFile = new File(rootFolder, NETHER);
+      final SerialChunkManager manager = new SerialChunkManager();
+      manager.setFolder(netherFile, false);
+      nether = manager;
+    }
+    return nether;
   }
 
   /**
@@ -136,10 +239,13 @@ public class World {
    * @return The chunk manager for the end.
    */
   public SerialChunkManager getWorldEnd() {
-    final File worldEnd = new File(rootFolder, WORLD_END);
-    final SerialChunkManager manager = new SerialChunkManager();
-    manager.setFolder(worldEnd, false);
-    return manager;
+    if(endworld == null) {
+      final File worldEnd = new File(rootFolder, WORLD_END);
+      final SerialChunkManager manager = new SerialChunkManager();
+      manager.setFolder(worldEnd, false);
+      endworld = manager;
+    }
+    return endworld;
   }
 
 }

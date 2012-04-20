@@ -5,13 +5,9 @@ package nbt.map.pos;
  * 
  * @author Joschi <josua.krause@googlemail.com>
  */
-public final class Position3D {
-  /** The x coordinate. */
-  public final int x;
+public final class Position3D extends InChunkPosition {
   /** The y coordinate. */
   public final int y;
-  /** The z coordinate. */
-  public final int z;
 
   /**
    * Creates a position.
@@ -21,8 +17,18 @@ public final class Position3D {
    * @param z The z coordinate.
    */
   public Position3D(final int x, final int y, final int z) {
-    this.x = x;
+    super(x, z);
     this.y = y;
-    this.z = z;
   }
+
+  /**
+   * Creates a 3d position from a flat position and height.
+   * 
+   * @param pos The flat position.
+   * @param y The height.
+   */
+  public Position3D(final InChunkPosition pos, final int y) {
+    this(pos.x, y, pos.z);
+  }
+
 }

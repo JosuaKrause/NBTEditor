@@ -38,7 +38,7 @@ public class BiomeBrush extends Brush {
 
   @Override
   protected void edit(final Chunk c, final InChunkPosition p) {
-    c.setBiome(p.x, p.z, biome);
+    c.setBiome(p, biome);
   }
 
   /**

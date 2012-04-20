@@ -7,8 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nbt.DynamicArray;
+import nbt.map.pos.ChunkInFilePosition;
 import nbt.map.pos.ChunkPosition;
-import nbt.map.pos.OwnChunkPosition;
+import nbt.map.pos.InChunkPosition;
 import nbt.map.pos.Position3D;
 import nbt.read.MapReader;
 import nbt.record.NBTByteArray;
@@ -27,7 +28,7 @@ public class Chunk {
   /**
    * The maximal world height.
    */
-  public static final int WORLD_HEIGHT = 256;
+  public static final int WORLD_MAX_Y = 256;
 
   private final NBTCompound level;
 
@@ -35,7 +36,7 @@ public class Chunk {
 
   private final File file;
 
-  private final ChunkPosition otherPos;
+  private final ChunkInFilePosition otherPos;
 
   /**
    * Creates a chunk from a given record.
@@ -45,7 +46,7 @@ public class Chunk {
    * @param otherPos The position of the map file.
    */
   public Chunk(final NBTCompound root, final File file,
-      final ChunkPosition otherPos) {
+      final ChunkInFilePosition otherPos) {
     final boolean validExt =
         file.getName().endsWith(RegionFile.ANVIL_EXTENSION);
     if(!validExt) throw new IllegalArgumentException(
@@ -69,7 +70,7 @@ public class Chunk {
    * 
    * @return Gets the position of the map file.
    */
-  public ChunkPosition getOtherPos() {
+  public ChunkInFilePosition getInFilePos() {
     return otherPos;
   }
 
@@ -78,8 +79,8 @@ public class Chunk {
    * 
    * @return Gets the position of the chunk.
    */
-  public OwnChunkPosition getPos() {
-    return new OwnChunkPosition(getX(), getZ());
+  public ChunkPosition getPos() {
+    return new ChunkPosition(getX(), getZ());
   }
 
   /**
@@ -120,9 +121,9 @@ public class Chunk {
     return ((NBTNumeric<Byte>) section.get("Y")).getPayload();
   }
 
-  private static int getBlockPositionInSection(final int x, final int y,
-      final int z) {
-    return (y << 8) | (z << 4) | x;
+  private static int getBlockPositionInSection(final InChunkPosition pos,
+      final int y) {
+    return (y << 8) | (pos.z << 4) | pos.x;
   }
 
   private final Map<NBTCompound, NBTByteArray> cacheBlocks =
@@ -131,10 +132,10 @@ public class Chunk {
   private final Map<NBTCompound, NBTByteArray> cacheAddBlocks =
       new HashMap<NBTCompound, NBTByteArray>();
 
-  private int getBlockInSection(final NBTCompound section, final int x,
-      final int y, final int z) {
+  private int getBlockInSection(final NBTCompound section,
+      final InChunkPosition p, final int y) {
     if(section == null) return Blocks.AIR.id;
-    final int pos = getBlockPositionInSection(x, y, z);
+    final int pos = getBlockPositionInSection(p, y);
     if(!cacheBlocks.containsKey(section)) {
       cacheBlocks.put(section, (NBTByteArray) section.get("Blocks"));
     }
@@ -147,11 +148,11 @@ public class Chunk {
         + (addBlocks != null ? (addBlocks.getAt(pos) << 8) : 0);
   }
 
-  private void setBlockInSection(final NBTCompound section, final int x,
-      final int y, final int z, final Blocks b) {
+  private void setBlockInSection(final NBTCompound section,
+      final InChunkPosition p, final int y, final Blocks b) {
     if(section == null) throw new NullPointerException(
         "section may not be null");
-    final int pos = getBlockPositionInSection(x, y, z);
+    final int pos = getBlockPositionInSection(p, y);
     if(!cacheBlocks.containsKey(section)) {
       cacheBlocks.put(section, (NBTByteArray) section.get("Blocks"));
     }
@@ -167,39 +168,7 @@ public class Chunk {
     if(addBlocks != null) {
       addBlocks.setAt(pos, (byte) (id >>> 8));
     }
-    changeAt(x, z);
-  }
-
-  /**
-   * Getter.
-   * 
-   * @param x The x position.
-   * @param y The y position.
-   * @param z The z position.
-   * @return The block at the given position.
-   */
-  protected int getBlockFor(final int x, final int y, final int z) {
-    final int sectionY = y / 16;
-    final int inSectionY = y % 16;
-    return getBlockInSection(getSection(sectionY), x, inSectionY, z);
-  }
-
-  /**
-   * Setter.
-   * 
-   * @param x The x position.
-   * @param y The y position.
-   * @param z The z position.
-   * @param b The block to set at the given position.
-   */
-  protected void setBlockAt(final int x, final int y, final int z,
-      final Blocks b) {
-    final int sectionY = y / 16;
-    final int inSectionY = y % 16;
-    final NBTCompound section = getSection(sectionY);
-    if(section == null) throw new UnsupportedOperationException(
-        "attempt to create a new section");
-    setBlockInSection(section, x, inSectionY, z, b);
+    changeAt(p);
   }
 
   /**
@@ -208,20 +177,10 @@ public class Chunk {
    * @param pos The position.
    * @return The block at the given position.
    */
-  public Blocks getBlock(final Position3D pos) {
-    return getBlock(pos.x, pos.y, pos.z);
-  }
-
-  /**
-   * Getter.
-   * 
-   * @param x The x position.
-   * @param y The y position.
-   * @param z The z position.
-   * @return The block at the given position.
-   */
-  public Blocks getBlock(final int x, final int y, final int z) {
-    return Blocks.getBlockForId(getBlockFor(x, y, z));
+  protected int getBlockFor(final Position3D pos) {
+    final int sectionY = pos.y / 16;
+    final int inSectionY = pos.y % 16;
+    return getBlockInSection(getSection(sectionY), pos, inSectionY);
   }
 
   /**
@@ -231,38 +190,41 @@ public class Chunk {
    * @param b The block to set at the given position.
    */
   public void setBlock(final Position3D pos, final Blocks b) {
-    setBlock(pos.x, pos.y, pos.z, b);
+    final int sectionY = pos.y / 16;
+    final int inSectionY = pos.y % 16;
+    final NBTCompound section = getSection(sectionY);
+    if(section == null) throw new UnsupportedOperationException(
+        "attempt to create a new section");
+    setBlockInSection(section, pos, inSectionY, b);
   }
 
   /**
-   * Setter.
+   * Getter.
    * 
-   * @param x The x position.
-   * @param y The y position.
-   * @param z The z position.
-   * @param b The block to set at the given position.
+   * @param pos The position.
+   * @return The block at the given position.
    */
-  public void setBlock(final int x, final int y, final int z, final Blocks b) {
-    setBlockAt(x, y, z, b);
+  public Blocks getBlock(final Position3D pos) {
+    return Blocks.getBlockForId(getBlockFor(pos));
   }
 
   /**
    * Gets the topmost non air block. Remember that vines etc. are non air blocks
    * too.
    * 
-   * @param x The x coordinate.
-   * @param z The z coordinate.
+   * @param pos The position.
    * @return The Position of the topmost non air block.
    */
-  public Position3D getTopNonAirBlock(final int x, final int z) {
-    int y = WORLD_HEIGHT;
+  public Position3D getTopNonAirBlock(final InChunkPosition pos) {
+    int y = WORLD_MAX_Y;
     while(hasBlockFor(y)) {
-      if(getBlock(x, y, z) != Blocks.AIR) return new Position3D(x, y, z);
+      final Position3D res = new Position3D(pos, y);
+      if(getBlock(res) != Blocks.AIR) return res;
       --y;
     }
     // actually never really happens
     // but when it does we return an air block
-    return new Position3D(x, y, z);
+    return new Position3D(pos, y);
   }
 
   /**
@@ -272,48 +234,53 @@ public class Chunk {
    * @return If the value is in the correct range.
    */
   public boolean hasBlockFor(final int y) {
-    // does not handle holes correctly
-    // final int sectionY = y / 16;
-    // return getSection(sectionY) != null;
-    return y <= WORLD_HEIGHT && y >= 0;
+    return y <= WORLD_MAX_Y && y >= 0;
   }
 
-  private static int getBiomePosition(final int x, final int z) {
-    return (z << 4) | x;
+  /**
+   * Whether the given coordinate can be edited.
+   * 
+   * @param y The y coordinate.
+   * @return If the value can be edited.
+   */
+  public boolean canEdit(final int y) {
+    final int sectionY = y / 16;
+    return hasBlockFor(y) && getSection(sectionY) != null;
+  }
+
+  private static int getBiomePosition(final InChunkPosition pos) {
+    return (pos.z << 4) | pos.x;
   }
 
   /**
    * Gets the biome for the given position.
    * 
-   * @param x The x coordinate.
-   * @param z The z coordinate.
+   * @param pos The position.
    * @return The biome id.
    */
-  protected int getBiomeFor(final int x, final int z) {
-    return getBiomesArray().getAt(getBiomePosition(x, z));
+  protected int getBiomeFor(final InChunkPosition pos) {
+    return getBiomesArray().getAt(getBiomePosition(pos));
   }
 
   /**
    * Setter.
    * 
-   * @param x The x coordinate.
-   * @param z The z coordinate.
+   * @param pos The position.
    * @param biome Sets the biome at the given position.
    */
-  public void setBiome(final int x, final int z, final Biomes biome) {
-    getBiomesArray().setAt(getBiomePosition(x, z), (byte) biome.id);
-    changeAt(x, z);
+  public void setBiome(final InChunkPosition pos, final Biomes biome) {
+    getBiomesArray().setAt(getBiomePosition(pos), (byte) biome.id);
+    changeAt(pos);
   }
 
   /**
    * Gets the biome for the given position.
    * 
-   * @param x The x coordinate.
-   * @param z The z coordinate.
+   * @param pos The position.
    * @return The biome.
    */
-  public Biomes getBiome(final int x, final int z) {
-    return Biomes.getBlockForId(getBiomeFor(x, z));
+  public Biomes getBiome(final InChunkPosition pos) {
+    return Biomes.getBlockForId(getBiomeFor(pos));
   }
 
   private boolean hasChanged;
@@ -324,11 +291,10 @@ public class Chunk {
    * Flags a change in the column of the given position. The flag is removed by
    * {@link #oneTimeHasChanged()}.
    * 
-   * @param x The x position.
-   * @param z The z position.
+   * @param pos The position.
    */
-  public void changeAt(final int x, final int z) {
-    colors[x][z] = null;
+  public void changeAt(final InChunkPosition pos) {
+    colors[pos.x][pos.z] = null;
     hasChanged = true;
   }
 
@@ -347,16 +313,18 @@ public class Chunk {
   /**
    * Getter.
    * 
-   * @param x The x position.
-   * @param z The y position.
+   * @param pos The position.
    * @return Gets the color for the given column.
    */
-  public Color getColorForColumn(final int x, final int z) {
+  public Color getColorForColumn(final InChunkPosition pos) {
+    final int x = pos.x;
+    final int z = pos.z;
     if(colors[x][z] == null) {
       int y = 0;
       Color res = new Color(0, true);
       while(hasBlockFor(y)) {
-        final Blocks b = Blocks.getBlockForId(getBlockFor(x, y, z));
+        final Blocks b =
+            Blocks.getBlockForId(getBlockFor(new Position3D(pos, y)));
         res = combine(res, b.color);
         ++y;
       }
@@ -384,7 +352,7 @@ public class Chunk {
    * 
    * @return Gets the x position of the chunk.
    */
-  public int getXPos() {
+  private int getXPos() {
     return xCache;
   }
 
@@ -395,7 +363,7 @@ public class Chunk {
    * 
    * @return Gets the z position of the chunk.
    */
-  public int getZPos() {
+  private int getZPos() {
     return zCache;
   }
 
@@ -404,7 +372,7 @@ public class Chunk {
    * 
    * @return Gets the x position of the chunk in blocks.
    */
-  public int getX() {
+  protected int getX() {
     return getXPos() * 16;
   }
 
@@ -413,7 +381,7 @@ public class Chunk {
    * 
    * @return Gets the z position of the chunk in blocks.
    */
-  public int getZ() {
+  protected int getZ() {
     return getZPos() * 16;
   }
 

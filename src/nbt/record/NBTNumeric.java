@@ -36,6 +36,17 @@ public class NBTNumeric<T extends Number> extends NBTRecord {
     return payload;
   }
 
+  /**
+   * Setter.
+   * 
+   * @param value The payload.
+   */
+  public void setPayload(final T value) {
+    if(value.equals(payload)) return;
+    this.payload = value;
+    change();
+  }
+
   @Override
   public String getPayloadString() {
     return payload.toString();

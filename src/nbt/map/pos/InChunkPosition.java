@@ -5,7 +5,7 @@ package nbt.map.pos;
  * 
  * @author Joschi <josua.krause@googlemail.com>
  */
-public final class InChunkPosition extends Pair {
+public class InChunkPosition extends Pair {
 
   /**
    * Creates an in-chunk position.
