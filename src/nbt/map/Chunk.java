@@ -245,7 +245,7 @@ public class Chunk {
    */
   public boolean canEdit(final int y) {
     final int sectionY = y / 16;
-    return getSection(sectionY) != null;
+    return hasBlockFor(y) && getSection(sectionY) != null;
   }
 
   private static int getBiomePosition(final InChunkPosition pos) {
