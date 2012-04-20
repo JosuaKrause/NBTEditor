@@ -1,11 +1,9 @@
 package nbt;
 
 import java.io.File;
+import java.io.IOException;
 
-import nbt.map.Chunk;
-import nbt.map.Chunk.Position;
-import nbt.map.Pair;
-import nbt.map.SerialChunkManager;
+import nbt.world.Player;
 import nbt.world.World;
 
 /**
@@ -26,19 +24,19 @@ public final class MainHardcore {
    *          folder must be passed. With {@code -s} the spawn will be set
    *          outside of the game area. With {@code -p} all already present
    *          players will be placed randomly in the game area.
+   * @throws IOException I/O Exception.
    */
-  public static void main(final String[] args) {
+  public static void main(final String[] args) throws IOException {
     if(args.length != 1) // TODO: argument parsing
     return;
     // TODO: do the work ;)
     final File file = new File(args[0]);
     final World world = new World(file);
-    final SerialChunkManager manager = world.getOverworld();
-    final Chunk c = manager.getChunk(-263, 287);
-    final Pair pos = manager.getPosInChunk(-263, 287);
-    final Position b = c.getTopNonAirBlock(pos.x, pos.z);
-    System.out.println(c.getBlock(b));
-    manager.unloadChunk(c);
+    for(final String player : world.listPlayers()) {
+      final Player p = world.getPlayer(player);
+      System.out.println("Player: " + player + " Pos: "
+          + p.getPosition().getFullRepresentation());
+    }
   }
 
 }

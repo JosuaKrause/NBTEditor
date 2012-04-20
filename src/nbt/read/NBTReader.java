@@ -53,11 +53,17 @@ public class NBTReader extends PushBackReader {
   /**
    * Reads the nbt stream.
    * 
+   * @param exp Expected type, {@code null} for no check.
+   * @param <T> The type.
    * @return The root record.
    * @throws IOException I/O Exception.
    */
-  public NBTRecord read() throws IOException {
-    return NBTType.readRecord(this);
+  @SuppressWarnings("unchecked")
+  public <T extends NBTRecord> T read(final NBTType exp) throws IOException {
+    final NBTRecord read = NBTType.readRecord(this);
+    if(exp != null && read.getType() != exp) throw new IllegalStateException(
+        "Expected: " + exp + " Got: " + read.getType());
+    return (T) read;
   }
 
 }

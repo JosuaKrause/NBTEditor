@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
+import nbt.record.NBTCompound;
 import nbt.record.NBTHandler;
-import nbt.record.NBTRecord;
+import nbt.record.NBTList;
+import nbt.record.NBTNumeric;
 
 /**
  * Represents a player nbt file or the player part in the level.dat file.
@@ -25,7 +27,7 @@ public class Player extends NBTHandler {
   public static final String PLAYER = "players/";
 
   // the real record root -- if the player data is in level.dat
-  private final NBTRecord playerRecord;
+  private final NBTCompound playerRecord;
 
   /**
    * Creates a player from a level.dat file.
@@ -33,7 +35,7 @@ public class Player extends NBTHandler {
    * @param level The level.
    * @param playerRoot The root record of the player informations in level.
    */
-  public Player(final Level level, final NBTRecord playerRoot) {
+  public Player(final Level level, final NBTCompound playerRoot) {
     super(level);
     playerRecord = playerRoot;
   }
@@ -41,10 +43,10 @@ public class Player extends NBTHandler {
   /**
    * Getter.
    * 
-   * @return Gets the actual player root record. Note that this is not necessary
-   *         equal to {@link #getRecord()}.
+   * @return Gets the actual player root record. Note that this is not
+   *         necessarily equal to {@link #getRoot()}.
    */
-  public NBTRecord getPlayerRecord() {
+  public NBTCompound getPlayerRecord() {
     return playerRecord;
   }
 
@@ -57,7 +59,16 @@ public class Player extends NBTHandler {
    */
   public Player(final File worldFolder, final String name) throws IOException {
     super(new File(worldFolder, PLAYER + name + PLAYER_EXT));
-    playerRecord = getRecord();
+    playerRecord = getRoot();
+  }
+
+  /**
+   * Getter.
+   * 
+   * @return The player position.
+   */
+  public NBTList<NBTNumeric<Double>> getPosition() {
+    return playerRecord.get("Pos");
   }
 
   /**

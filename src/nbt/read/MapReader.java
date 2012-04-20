@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 import nbt.map.Pair;
+import nbt.record.NBTCompound;
 import nbt.record.NBTRecord;
+import nbt.record.NBTType;
 import nbt.write.NBTWriter;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 
@@ -89,8 +91,8 @@ public final class MapReader {
    * @param z The z position of the chunk.
    * @return The record.
    */
-  public synchronized NBTRecord read(final int x, final int z) {
-    NBTRecord rec = null;
+  public synchronized NBTCompound read(final int x, final int z) {
+    NBTCompound rec = null;
     try {
       if(regionSource.hasChunk(x, z)) {
         final DataInputStream regionChunkInputStream =
@@ -98,7 +100,7 @@ public final class MapReader {
         if(regionChunkInputStream == null) throw new IOException(
             "Failed to fetch input stream");
         final NBTReader r = new NBTReader(regionChunkInputStream, false);
-        rec = r.read();
+        rec = r.read(NBTType.COMPOUND);
         r.close();
       }
     } catch(final IOException e) {

@@ -12,7 +12,6 @@ import nbt.record.NBTByteArray;
 import nbt.record.NBTCompound;
 import nbt.record.NBTList;
 import nbt.record.NBTNumeric;
-import nbt.record.NBTRecord;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 
 /**
@@ -29,7 +28,7 @@ public class Chunk {
 
   private final NBTCompound level;
 
-  private final NBTRecord root;
+  private final NBTCompound root;
 
   private final File file;
 
@@ -42,7 +41,7 @@ public class Chunk {
    * @param file The associated file.
    * @param otherPos The position of the map file.
    */
-  public Chunk(final NBTRecord root, final File file, final Pair otherPos) {
+  public Chunk(final NBTCompound root, final File file, final Pair otherPos) {
     final boolean validExt =
         file.getName().endsWith(RegionFile.ANVIL_EXTENSION);
     if(!validExt) throw new IllegalArgumentException(
@@ -50,16 +49,14 @@ public class Chunk {
     this.root = root;
     this.otherPos = otherPos;
     this.file = file;
-    level = (NBTCompound) ((NBTCompound) root).get("Level");
-    xCache = ((NBTNumeric) level.get("xPos")).getPayload().intValue();
-    zCache = ((NBTNumeric) level.get("zPos")).getPayload().intValue();
-    biomes = (NBTByteArray) level.get("Biomes");
-    sections = (NBTList) level.get("Sections");
+    level = root.get("Level");
+    xCache = ((NBTNumeric<Integer>) level.get("xPos")).getPayload();
+    zCache = ((NBTNumeric<Integer>) level.get("zPos")).getPayload();
+    biomes = level.get("Biomes");
+    sections = level.get("Sections");
     sectionCache = new DynamicArray<NBTCompound>(sections.getLength());
-    for(final NBTRecord r : sections) {
-      final NBTCompound comp = (NBTCompound) r;
-      final int y = getSectionY(comp);
-      sectionCache.set(y, comp);
+    for(final NBTCompound comp : sections) {
+      sectionCache.set(getSectionY(comp), comp);
     }
   }
 
@@ -101,7 +98,7 @@ public class Chunk {
     return biomes;
   }
 
-  private final NBTList sections;
+  private final NBTList<NBTCompound> sections;
 
   private final DynamicArray<NBTCompound> sectionCache;
 
@@ -116,7 +113,7 @@ public class Chunk {
   }
 
   private static int getSectionY(final NBTCompound section) {
-    return ((NBTNumeric) section.get("Y")).getPayload().byteValue();
+    return ((NBTNumeric<Byte>) section.get("Y")).getPayload();
   }
 
   private static int getBlockPositionInSection(final int x, final int y,

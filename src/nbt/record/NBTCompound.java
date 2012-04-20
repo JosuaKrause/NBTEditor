@@ -55,11 +55,22 @@ public class NBTCompound extends NBTRecord {
   /**
    * Getter.
    * 
+   * @param <T> Record type.
    * @param name The name.
    * @return The record with the given name.
    */
-  public NBTRecord get(final String name) {
-    return map.get(name);
+  public <T extends NBTRecord> T get(final String name) {
+    return (T) map.get(name);
+  }
+
+  /**
+   * Getter.
+   * 
+   * @param name The name.
+   * @return Whether a record for the given name exists in the compund.
+   */
+  public boolean has(final String name) {
+    return map.containsKey(name);
   }
 
   /**

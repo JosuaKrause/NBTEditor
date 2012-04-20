@@ -3,8 +3,8 @@ package nbt.world;
 import java.io.File;
 import java.io.IOException;
 
+import nbt.record.NBTCompound;
 import nbt.record.NBTHandler;
-import nbt.record.NBTRecord;
 
 /**
  * Represents the level information file.
@@ -18,6 +18,8 @@ public class Level extends NBTHandler {
    */
   public static final String LEVEL = "level.dat";
 
+  private final NBTCompound data;
+
   /**
    * Creates a level information handler.
    * 
@@ -26,6 +28,7 @@ public class Level extends NBTHandler {
    */
   public Level(final File worldFolder) throws IOException {
     super(new File(worldFolder, LEVEL));
+    data = getRoot().get("Data");
   }
 
   /**
@@ -34,8 +37,7 @@ public class Level extends NBTHandler {
    * @return Whether this level.dat represents a single player world.
    */
   public boolean isSinglePlayer() {
-    // TODO: yada yada
-    return false;
+    return data.has("Player");
   }
 
   /**
@@ -43,11 +45,10 @@ public class Level extends NBTHandler {
    * 
    * @return The single player record on a single player map.
    */
-  public NBTRecord getPlayerRecord() {
+  public NBTCompound getPlayerRecord() {
     if(!isSinglePlayer()) throw new IllegalStateException(
         "This world is a multi player world!");
-    // TODO: yada yada
-    return null;
+    return data.get("Player");
   }
 
   /**

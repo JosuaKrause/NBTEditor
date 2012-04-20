@@ -17,7 +17,7 @@ public class NBTHandler {
 
   private final boolean wrapZip;
 
-  private final NBTRecord record;
+  private final NBTCompound root;
 
   /**
    * Creates a nbt handler.
@@ -30,7 +30,7 @@ public class NBTHandler {
       throws IOException {
     this.nbtFile = nbtFile;
     this.wrapZip = wrapZip;
-    record = new NBTReader(nbtFile).read();
+    root = new NBTReader(nbtFile).read(NBTType.COMPOUND);
   }
 
   /**
@@ -41,7 +41,7 @@ public class NBTHandler {
   public NBTHandler(final NBTHandler handler) {
     nbtFile = handler.nbtFile;
     wrapZip = handler.wrapZip;
-    record = handler.record;
+    root = handler.root;
   }
 
   /**
@@ -60,9 +60,9 @@ public class NBTHandler {
    * @throws IOException I/O Exception.
    */
   public void save() throws IOException {
-    if(!record.hasChanged()) return;
+    if(!root.hasChanged()) return;
     final NBTWriter out = new NBTWriter(nbtFile, wrapZip);
-    out.write(record);
+    out.write(root);
     out.close();
   }
 
@@ -71,8 +71,8 @@ public class NBTHandler {
    * 
    * @return The root element of the nbt file.
    */
-  public NBTRecord getRecord() {
-    return record;
+  public NBTCompound getRoot() {
+    return root;
   }
 
   /**

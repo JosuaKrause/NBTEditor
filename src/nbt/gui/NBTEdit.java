@@ -29,7 +29,9 @@ import nbt.map.Chunk;
 import nbt.map.Pair;
 import nbt.read.MapReader;
 import nbt.read.NBTReader;
+import nbt.record.NBTCompound;
 import nbt.record.NBTRecord;
+import nbt.record.NBTType;
 import nbt.write.NBTWriter;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 
@@ -231,7 +233,7 @@ public class NBTEdit extends JPanel {
       e.printStackTrace();
     }
     NBTReader read = null;
-    NBTRecord r = null;
+    NBTCompound r = null;
     try {
       if(hasExtension(file, RegionFile.ANVIL_EXTENSION,
           RegionFile.MCREGION_EXTENSION)) {
@@ -243,9 +245,7 @@ public class NBTEdit extends JPanel {
             "Choose chunk", JOptionPane.PLAIN_MESSAGE,
             null, coords.toArray(), null);
         r = chunk != null ? mr.read(chunk.x, chunk.z) : null;
-        if(r != null
-            && hasExtension(file,
-                RegionFile.ANVIL_EXTENSION)) {
+        if(r != null && hasExtension(file, RegionFile.ANVIL_EXTENSION)) {
           final Chunk c = new Chunk(r, file, chunk);
           new ChunkFrame(8.0, c, frame);
         }
@@ -253,7 +253,7 @@ public class NBTEdit extends JPanel {
         canSave = false;
       } else {
         read = new NBTReader(file);
-        r = read.read();
+        r = read.read(NBTType.COMPOUND);
         wrapZip = true;
         canSave = true;
       }

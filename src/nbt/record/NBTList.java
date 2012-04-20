@@ -10,8 +10,10 @@ import nbt.write.ByteWriter;
  * A nbt list contains arbitrary many elements of the same record type.
  * 
  * @author Joschi <josua.krause@googlemail.com>
+ * @param <T> The content type.
  */
-public class NBTList extends NBTRecord implements Iterable<NBTRecord> {
+public class NBTList<T extends NBTRecord> extends NBTRecord implements
+    Iterable<T> {
 
   private final NBTType type;
 
@@ -25,7 +27,7 @@ public class NBTList extends NBTRecord implements Iterable<NBTRecord> {
    * @param records The list of elements.
    */
   public NBTList(final String name, final NBTType type,
-      final NBTRecord[] records) {
+      final T[] records) {
     super(NBTType.LIST, name);
     this.type = type;
     setArray(records);
@@ -46,8 +48,9 @@ public class NBTList extends NBTRecord implements Iterable<NBTRecord> {
    * @param pos The index.
    * @return The element at the given index.
    */
-  public NBTRecord getAt(final int pos) {
-    return records[pos];
+  @SuppressWarnings("unchecked")
+  public T getAt(final int pos) {
+    return (T) records[pos];
   }
 
   /**
@@ -58,7 +61,7 @@ public class NBTList extends NBTRecord implements Iterable<NBTRecord> {
    *          <code>null</code> and must have the same type as all other
    *          elements in the list.
    */
-  public void setAt(final int pos, final NBTRecord rec) {
+  public void setAt(final int pos, final T rec) {
     if(rec.getName() != null) throw new IllegalArgumentException(
         "list items must not be named: "
             + rec.getName());
@@ -89,7 +92,7 @@ public class NBTList extends NBTRecord implements Iterable<NBTRecord> {
    * 
    * @param arr Sets the new array.
    */
-  public void setArray(final NBTRecord[] arr) {
+  public void setArray(final T[] arr) {
     records = new NBTRecord[arr.length];
     for(int i = 0; i < arr.length; ++i) {
       setAt(i, arr[i]);
@@ -144,16 +147,17 @@ public class NBTList extends NBTRecord implements Iterable<NBTRecord> {
     sb.append(records.length);
     sb.append(" entries\n{\n");
     for(final NBTRecord r : records) {
-      sb.append(r.toString());
+      sb.append(r.getPayloadString());
       sb.append("\n");
     }
     sb.append("}");
     return sb.toString();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public Iterator<NBTRecord> iterator() {
-    return Arrays.asList(records).iterator();
+  public Iterator<T> iterator() {
+    return Arrays.asList((T[]) records).iterator();
   }
 
 }
