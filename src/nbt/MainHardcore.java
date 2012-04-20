@@ -169,7 +169,7 @@ public final class MainHardcore {
       final boolean hor, final boolean positive, final Chunk lc) {
     Chunk lastChunk = lc;
     final int a = positive ? dist : -dist;
-    for(int t = -dist; t < dist; ++t) {
+    for(int t = -dist; t <= dist; ++t) {
       final WorldPosition pos = new WorldPosition(hor ? t : a, hor ? a : t);
       final Chunk chunk = ow.getChunk(pos);
       if(chunk != lastChunk) {
