@@ -7,10 +7,6 @@ package nbt.map.pos;
  */
 public final class WorldPosition extends Pair {
 
-  private final boolean xlt;
-
-  private final boolean zlt;
-
   /**
    * Creates a world position.
    * 
@@ -18,24 +14,7 @@ public final class WorldPosition extends Pair {
    * @param z The z coordinate.
    */
   public WorldPosition(final int x, final int z) {
-    this(x, z, x < 0, z < 0);
-  }
-
-  /**
-   * Creates a world position.
-   * 
-   * @param x The x coordinate.
-   * @param z The z coordinate.
-   * @param xlt If x is smaller than zero. This information can be lost due to
-   *          rounding errors.
-   * @param zlt If z is smaller than zero. This information can be lost due to
-   *          rounding errors.
-   */
-  public WorldPosition(final int x, final int z, final boolean xlt,
-      final boolean zlt) {
     super(x, z);
-    this.xlt = xlt;
-    this.zlt = zlt;
   }
 
   /**
@@ -44,8 +23,8 @@ public final class WorldPosition extends Pair {
    * @return The position in the chunk.
    */
   public InChunkPosition getPosInChunk() {
-    final int cx = x % 16 + (xlt ? 15 : 0);
-    final int cz = z % 16 + (zlt ? 15 : 0);
+    final int cx = x >= 0 ? x % 16 : 15 + (x + 1) % 16;
+    final int cz = z >= 0 ? z % 16 : 15 + (z + 1) % 16;
     return new InChunkPosition(cx, cz);
   }
 
@@ -55,8 +34,8 @@ public final class WorldPosition extends Pair {
    * @return The chunk position.
    */
   public ChunkPosition getPosOfChunk() {
-    final int cx = x / 16 - (xlt ? 1 : 0);
-    final int cz = z / 16 - (zlt ? 1 : 0);
+    final int cx = x >= 0 ? x / 16 : (x + 1) / 16 - 1;
+    final int cz = z >= 0 ? z / 16 : (z + 1) / 16 - 1;
     return new ChunkPosition(cx * 16, cz * 16);
   }
 
