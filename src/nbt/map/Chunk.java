@@ -28,7 +28,7 @@ public class Chunk {
   /**
    * The maximal world height.
    */
-  public static final int WORLD_HEIGHT = 256;
+  public static final int WORLD_MAX_Y = 256;
 
   private final NBTCompound level;
 
@@ -216,7 +216,7 @@ public class Chunk {
    * @return The Position of the topmost non air block.
    */
   public Position3D getTopNonAirBlock(final InChunkPosition pos) {
-    int y = WORLD_HEIGHT;
+    int y = WORLD_MAX_Y;
     while(hasBlockFor(y)) {
       final Position3D res = new Position3D(pos, y);
       if(getBlock(res) != Blocks.AIR) return res;
@@ -234,10 +234,18 @@ public class Chunk {
    * @return If the value is in the correct range.
    */
   public boolean hasBlockFor(final int y) {
-    // does not handle holes correctly
-    // final int sectionY = y / 16;
-    // return getSection(sectionY) != null;
-    return y <= WORLD_HEIGHT && y >= 0;
+    return y <= WORLD_MAX_Y && y >= 0;
+  }
+
+  /**
+   * Whether the given coordinate can be edited.
+   * 
+   * @param y The y coordinate.
+   * @return If the value can be edited.
+   */
+  public boolean canEdit(final int y) {
+    final int sectionY = y / 16;
+    return getSection(sectionY) != null;
   }
 
   private static int getBiomePosition(final InChunkPosition pos) {

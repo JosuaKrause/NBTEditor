@@ -91,6 +91,19 @@ public class SerialChunkManager {
   }
 
   /**
+   * Tests whether a chunk at the given position exists.
+   * 
+   * @param pos The position.
+   * @return Whether there is a chunk.
+   */
+  public boolean existChunk(final WorldPosition pos) {
+    final Chunk chunk = getChunk(pos);
+    if(chunk == null) return false;
+    unloadChunk(chunk);
+    return true;
+  }
+
+  /**
    * Getter.
    * 
    * @param pos The position.

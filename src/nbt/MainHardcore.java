@@ -3,10 +3,17 @@ package nbt;
 import java.io.File;
 import java.io.IOException;
 
-import nbt.record.NBTList;
-import nbt.record.NBTNumeric;
+import nbt.map.Biomes;
+import nbt.map.Blocks;
+import nbt.map.Chunk;
+import nbt.map.SerialChunkManager;
+import nbt.map.pos.InChunkPosition;
+import nbt.map.pos.Position3D;
+import nbt.map.pos.WorldPosition;
+import nbt.world.Level;
 import nbt.world.Player;
 import nbt.world.World;
+import nbt.world.World.WorldDimension;
 
 /**
  * A command line interface for creating a ultra hardcore world.
@@ -20,11 +27,12 @@ public final class MainHardcore {
   }
 
   private static void usageAndDie() {
-    System.err.println("Usage: [-r <radius>] [-b <border>] [-sp] <world>");
+    System.err.println("Usage: [-r <radius>] [-b <border>] [-spn] <world>");
     System.err.println("-r: <radius> defines the area where the hardcore game is played");
     System.err.println("-b: <border> defines the border of the game area");
     System.err.println("-s: sets the spawn to a place outside of the game area");
     System.err.println("-p: places the players randomly in the game area");
+    System.err.println("-n: creates no border");
     System.exit(1);
   }
 
@@ -42,6 +50,7 @@ public final class MainHardcore {
       File world = null;
       boolean setPlayer = false;
       boolean resetSpawn = false;
+      boolean noBorder = false;
       int radius = 700;
       int border = 80;
       for(int i = 0; i < args.length; ++i) {
@@ -60,6 +69,9 @@ public final class MainHardcore {
           }
           if(a.contains("s")) {
             resetSpawn = true;
+          }
+          if(a.contains("n")) {
+            noBorder = true;
           }
         } else {
           switch(opt) {
@@ -80,23 +92,37 @@ public final class MainHardcore {
         }
       }
       final World w = new World(world);
-      createBorder(w, radius, border);
       if(setPlayer) {
+        System.err.println("[info] setting player positions");
         setPlayers(w, radius);
       }
       if(resetSpawn) {
-        resetSpawn(w, radius);
+        System.err.println("[info] resetting spawn");
+        resetSpawn(w, radius, border);
       }
+      if(!noBorder) {
+        System.err.println("[info] creating border");
+        createBorder(w, radius, border);
+      }
+      System.err.println("[info] finished");
     } catch(final Exception e) {
       e.printStackTrace();
       usageAndDie();
     }
   }
 
-  @SuppressWarnings("unused")
-  private static void resetSpawn(final World w, final int radius) {
-    // TODO
-    System.err.println("resetting spawn not yet implemented");
+  private static void resetSpawn(final World w, final int radius,
+      final int border) throws IOException {
+    final int spawn = Math.max(1000000, (radius + border) * 2);
+    final WorldPosition wp = new WorldPosition(spawn, 0);
+    final Level dat = w.getLevelDat();
+    dat.setSpawn(
+        spawn,
+        (w.chunkExists(wp, WorldDimension.OVERWORLD)
+            ? w.getTopMostPosition(wp, WorldDimension.OVERWORLD)
+            : 64) + 1,
+        0);
+    dat.save();
   }
 
   private static double random(final int rad) {
@@ -105,23 +131,75 @@ public final class MainHardcore {
 
   private static void setPlayers(final World w, final int radius)
       throws IOException {
-    for(final String player : w.listPlayers()) {
-      final Player p = w.getPlayer(player);
-      final NBTList<NBTNumeric<Double>> pos = p.getPosition();
-      final NBTNumeric<Double> x = pos.getAt(0);
-      final NBTNumeric<Double> z = pos.getAt(2);
-      x.setPayload(random(radius));
-      z.setPayload(random(radius));
+    for(final Player p : w.getPlayers()) {
+      System.err.println("[info] setting position of player " + p.getName());
+      final double x = random(radius);
+      final double z = random(radius);
+      final WorldPosition wp = new WorldPosition((int) x, (int) z);
+      p.setDimension(WorldDimension.OVERWORLD);
+      final double y =
+          w.chunkExists(wp, WorldDimension.OVERWORLD)
+              ? w.getTopMostPosition(wp, WorldDimension.OVERWORLD)
+              : 64;
+      p.setPosition(x + .5, y + 1.5, z + .5);
       p.save();
     }
   }
 
-  @SuppressWarnings("unused")
   private static void createBorder(final World w, final int radius,
       final int border) {
-    // SerialChunkManager ow = w.getOverworld();
-    // Chunk lastChunk = null;
-    // TODO:
+    final SerialChunkManager ow = w.getOverworld();
+    for(int b = 0; b < border; ++b) {
+      round(ow, radius + b);
+    }
+  }
+
+  private static void round(final SerialChunkManager ow, final int dist) {
+    Chunk lastChunk = null;
+    lastChunk = row(ow, dist, true, true, lastChunk);
+    lastChunk = row(ow, dist, false, true, lastChunk);
+    lastChunk = row(ow, dist, true, false, lastChunk);
+    lastChunk = row(ow, dist, false, false, lastChunk);
+    if(lastChunk != null) {
+      ow.unloadChunk(lastChunk);
+    }
+  }
+
+  private static Chunk row(final SerialChunkManager ow, final int dist,
+      final boolean hor, final boolean positive, final Chunk lc) {
+    Chunk lastChunk = lc;
+    final int a = positive ? dist : -dist;
+    for(int t = -dist; t < dist; ++t) {
+      final WorldPosition pos = new WorldPosition(hor ? t : a, hor ? a : t);
+      final Chunk chunk = ow.getChunk(pos);
+      if(chunk != lastChunk) {
+        if(lastChunk != null) {
+          ow.unloadChunk(lastChunk);
+          if(chunk == null) {
+            System.err.println("[warning] not yet created chunk");
+          }
+        }
+        lastChunk = chunk;
+      }
+      if(chunk != null) {
+        editColumn(chunk, pos.getPosInChunk());
+      }
+    }
+    return lastChunk;
+  }
+
+  private static final int THRESHOLD = 65;
+
+  private static void editColumn(final Chunk chunk, final InChunkPosition pos) {
+    for(int y = 0; y <= Chunk.WORLD_MAX_Y; ++y) {
+      if(!chunk.canEdit(y)) {
+        continue;
+      }
+      chunk.setBlock(new Position3D(pos, y), y > THRESHOLD
+          ? Blocks.AIR
+          : Blocks.WATER_STAT);
+    }
+    chunk.setBiome(pos, Biomes.OCEAN);
   }
 
 }
