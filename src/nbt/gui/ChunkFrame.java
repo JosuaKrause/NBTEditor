@@ -13,6 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
 import nbt.map.Chunk;
+import nbt.map.pos.InChunkPosition;
 
 /**
  * A small frame to show the loaded chunk from the nbt editor. Note that this
@@ -64,10 +65,10 @@ public class ChunkFrame extends JFrame {
         public void mouseMoved(final MouseEvent e) {
           final double scale = getScale();
           final int x = (int) (e.getX() / scale);
-          final int y = (int) (e.getY() / scale);
-          if(x >= 0 && x < 16 && y >= 0 && y < 16) {
-            final String tt = "x:" + x + " y:" + y + " b:"
-                + getChunk().getBiome(x, y).name;
+          final int z = (int) (e.getY() / scale);
+          if(x >= 0 && x < 16 && z >= 0 && z < 16) {
+            final String tt = "x:" + x + " z:" + z + " b:"
+                + getChunk().getBiome(new InChunkPosition(x, z)).name;
             setTitle(TITLE + " - " + tt);
             setToolTipText(tt);
           } else {
@@ -104,7 +105,7 @@ public class ChunkFrame extends JFrame {
         for(int z = 0; z < 16; ++z) {
           final Rectangle2D rect = new Rectangle2D.Double(x * scale,
               z * scale, scale, scale);
-          g.setColor(chunk.getColorForColumn(x, z));
+          g.setColor(chunk.getColorForColumn(new InChunkPosition(x, z)));
           g.fill(rect);
         }
       }

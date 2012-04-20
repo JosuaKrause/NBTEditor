@@ -8,6 +8,7 @@ import nbt.map.Biomes;
 import nbt.map.Blocks;
 import nbt.map.Chunk;
 import nbt.map.pos.InChunkPosition;
+import nbt.map.pos.Position3D;
 
 /**
  * Converts a part of a map into a dessert. That is every stone/dirt block over
@@ -44,13 +45,12 @@ public class DesertBrush extends Brush {
 
   @Override
   protected void edit(final Chunk c, final InChunkPosition posInChunk) {
-    final int x = posInChunk.x;
-    final int z = posInChunk.z;
     for(int y = START; y <= Chunk.WORLD_HEIGHT; ++y) {
       if(!c.hasBlockFor(y)) {
         continue;
       }
-      final Blocks b = c.getBlock(x, y, z);
+      final Position3D pos = new Position3D(posInChunk, y);
+      final Blocks b = c.getBlock(pos);
       switch(b) {
         case WATER_STAT:
         case WATER:
@@ -60,17 +60,17 @@ public class DesertBrush extends Brush {
         case GRAVEL:
         case SAND:
         case SANDSTONE:
-          c.setBlock(x, y, z, sandstone ? Blocks.SANDSTONE : Blocks.SAND);
+          c.setBlock(pos, sandstone ? Blocks.SANDSTONE : Blocks.SAND);
           break;
         case DANDELION:
         case ROSE:
-          c.setBlock(x, y, z, Blocks.AIR);
+          c.setBlock(pos, Blocks.AIR);
           break;
         default:
           break;
       }
     }
-    c.setBiome(x, z, Biomes.DESERT);
+    c.setBiome(posInChunk, Biomes.DESERT);
   }
 
   /**

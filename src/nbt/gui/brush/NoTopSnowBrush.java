@@ -35,7 +35,7 @@ public class NoTopSnowBrush extends Brush {
 
   @Override
   protected void edit(final Chunk c, final InChunkPosition p) {
-    Position3D pos = c.getTopNonAirBlock(p.x, p.z);
+    Position3D pos = c.getTopNonAirBlock(p);
     while(pos.y >= 0) {
       final Blocks b = c.getBlock(pos);
       switch(b) {

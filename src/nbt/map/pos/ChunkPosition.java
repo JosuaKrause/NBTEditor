@@ -1,14 +1,14 @@
 package nbt.map.pos;
 
 /**
- * References the position of a chunk in the world.
+ * References the position of a chunk in the world as provided by the chunk.
  * 
  * @author Joschi <josua.krause@googlemail.com>
  */
 public final class ChunkPosition extends Pair {
 
   /**
-   * Creates a chunk position.
+   * Creates an own chunk position.
    * 
    * @param x The x coordinate.
    * @param z The z coordinate.

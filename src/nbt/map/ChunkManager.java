@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nbt.map.pos.ChunkInFilePosition;
 import nbt.map.pos.ChunkPosition;
 import nbt.map.pos.InChunkPosition;
-import nbt.map.pos.OwnChunkPosition;
 import nbt.read.MapReader;
 import net.minecraft.world.level.chunk.storage.RegionFile;
 
@@ -25,11 +25,11 @@ import net.minecraft.world.level.chunk.storage.RegionFile;
  */
 public class ChunkManager {
 
-  private final Map<OwnChunkPosition, Chunk> chunks;
+  private final Map<ChunkPosition, Chunk> chunks;
 
-  private final Map<OwnChunkPosition, File> reload;
+  private final Map<ChunkPosition, File> reload;
 
-  private final Map<OwnChunkPosition, ChunkPosition> otherPos;
+  private final Map<ChunkPosition, ChunkInFilePosition> otherPos;
 
   private final Set<Chunk> mayUnload;
 
@@ -45,9 +45,9 @@ public class ChunkManager {
   public ChunkManager(final UpdateReceiver user) {
     if(user == null) throw new NullPointerException("user");
     this.user = user;
-    chunks = new HashMap<OwnChunkPosition, Chunk>();
-    reload = new HashMap<OwnChunkPosition, File>();
-    otherPos = new HashMap<OwnChunkPosition, ChunkPosition>();
+    chunks = new HashMap<ChunkPosition, Chunk>();
+    reload = new HashMap<ChunkPosition, File>();
+    otherPos = new HashMap<ChunkPosition, ChunkInFilePosition>();
     mayUnload = new HashSet<Chunk>();
     int numThreads = Math.max(Runtime.getRuntime().availableProcessors(), 2);
     System.out.println("Using " + numThreads + " chunk reloader");
@@ -116,8 +116,8 @@ public class ChunkManager {
     });
     for(final File f : files) {
       final MapReader r = MapReader.getForFile(f);
-      final List<ChunkPosition> chunkList = r.getChunks();
-      for(final ChunkPosition p : chunkList) {
+      final List<ChunkInFilePosition> chunkList = r.getChunks();
+      for(final ChunkInFilePosition p : chunkList) {
         if(t != iniLoader || t.isInterrupted()) return;
         final Chunk chunk = new Chunk(r.read(p), f, p);
         unloadChunk(chunk);
@@ -151,7 +151,7 @@ public class ChunkManager {
    * @param chunk The chunk to unload.
    */
   public void unloadChunk(final Chunk chunk) {
-    final OwnChunkPosition pos = chunk.getPos();
+    final ChunkPosition pos = chunk.getPos();
     synchronized(chunks) {
       chunks.remove(pos);
     }
@@ -159,7 +159,7 @@ public class ChunkManager {
       reload.put(pos, chunk.getFile());
     }
     synchronized(otherPos) {
-      otherPos.put(pos, chunk.getOtherPos());
+      otherPos.put(pos, chunk.getInFilePos());
     }
     synchronized(mayUnload) {
       mayUnload.remove(chunk);
@@ -205,7 +205,7 @@ public class ChunkManager {
    * 
    * @param pos The position of the chunk.
    */
-  protected void reloadChunk(final OwnChunkPosition pos) {
+  protected void reloadChunk(final ChunkPosition pos) {
     boolean end = false;
     do {
       try {
@@ -215,7 +215,7 @@ public class ChunkManager {
           f = reload.get(pos);
         }
         if(f == null) return;
-        final ChunkPosition op;
+        final ChunkInFilePosition op;
         synchronized(otherPos) {
           op = otherPos.get(pos);
         }
@@ -252,13 +252,13 @@ public class ChunkManager {
    * @param entries The collection of pairs.
    * @return The array.
    */
-  private static OwnChunkPosition[] asArrayPair(
-      final Collection<OwnChunkPosition> entries) {
-    return entries.toArray(new OwnChunkPosition[entries.size()]);
+  private static ChunkPosition[] asArrayPair(
+      final Collection<ChunkPosition> entries) {
+    return entries.toArray(new ChunkPosition[entries.size()]);
   }
 
-  private final Set<OwnChunkPosition> chunksToReload =
-      new HashSet<OwnChunkPosition>();
+  private final Set<ChunkPosition> chunksToReload =
+      new HashSet<ChunkPosition>();
 
   /**
    * Starts another reloader thread. Note that these threads may not be stopped
@@ -306,9 +306,9 @@ public class ChunkManager {
    * Reloads the next chunk in the list.
    */
   public void reloadNext() {
-    final OwnChunkPosition p;
+    final ChunkPosition p;
     synchronized(chunksToReload) {
-      final Iterator<OwnChunkPosition> it = chunksToReload.iterator();
+      final Iterator<ChunkPosition> it = chunksToReload.iterator();
       if(!it.hasNext()) return;
       p = it.next();
       it.remove();
@@ -381,17 +381,6 @@ public class ChunkManager {
   }
 
   /**
-   * Gets the chunk at the given position.
-   * 
-   * @param x The x position.
-   * @param z The z position.
-   * @return The chunk.
-   */
-  public Chunk getChunk(final int x, final int z) {
-    return getChunk(new OwnChunkPosition(x * 16, z * 16));
-  }
-
-  /**
    * Signals that a chunk may be unloaded.
    * 
    * @param c The chunk.
@@ -423,7 +412,7 @@ public class ChunkManager {
    * @param pos The position.
    * @return The chunk at the given position.
    */
-  public Chunk getChunk(final OwnChunkPosition pos) {
+  public Chunk getChunk(final ChunkPosition pos) {
     Chunk c;
     synchronized(chunks) {
       c = chunks.get(pos);
@@ -436,7 +425,7 @@ public class ChunkManager {
    * 
    * @param pos The position of the chunk.
    */
-  public void needsReload(final OwnChunkPosition pos) {
+  public void needsReload(final ChunkPosition pos) {
     synchronized(chunksToReload) {
       chunksToReload.add(pos);
     }
@@ -448,8 +437,8 @@ public class ChunkManager {
    * 
    * @return All chunk positions that may be reloaded.
    */
-  public OwnChunkPosition[] getReloadEntries() {
-    OwnChunkPosition[] reloadEntries;
+  public ChunkPosition[] getReloadEntries() {
+    ChunkPosition[] reloadEntries;
     synchronized(reload) {
       reloadEntries = asArrayPair(reload.keySet());
     }
@@ -461,8 +450,8 @@ public class ChunkManager {
    * 
    * @return All chunks positions.
    */
-  public OwnChunkPosition[] getChunkEntries() {
-    OwnChunkPosition[] chunkEntries;
+  public ChunkPosition[] getChunkEntries() {
+    ChunkPosition[] chunkEntries;
     synchronized(chunks) {
       chunkEntries = asArrayPair(chunks.keySet());
     }

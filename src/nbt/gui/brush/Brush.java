@@ -5,6 +5,7 @@ import nbt.gui.MapViewer;
 import nbt.map.Chunk;
 import nbt.map.ChunkEdit;
 import nbt.map.pos.InChunkPosition;
+import nbt.map.pos.ScreenPosition;
 
 /**
  * Brushes paint on the map.
@@ -68,7 +69,7 @@ public abstract class Brush implements ClickReceiver {
         }
         final int posX = x + i;
         final int posZ = z + j;
-        viewer.editChunk(posX, posZ, edit);
+        viewer.editChunk(new ScreenPosition(posX, posZ), edit);
       }
     }
     viewer.editFinished();

@@ -12,7 +12,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import nbt.map.pos.OwnChunkPosition;
+import nbt.map.pos.ChunkPosition;
+import nbt.map.pos.InChunkPosition;
 
 /**
  * The chunk painter paints chunks on an image and on the screen.
@@ -76,7 +77,7 @@ public class ChunkPainter {
       for(int z = 0; z < 16; ++z) {
         final Rectangle2D rect = new Rectangle2D.Double(x * scale, z
             * scale, scale, scale);
-        gi.setColor(chunk.getColorForColumn(x, z));
+        gi.setColor(chunk.getColorForColumn(new InChunkPosition(x, z)));
         gi.fill(rect);
       }
     }
@@ -198,9 +199,9 @@ public class ChunkPainter {
       final double s = scale(1);
       for(int x = 0; x < 16; ++x) {
         for(int z = 0; z < 16; ++z) {
-          final Rectangle2D rect = new Rectangle2D.Double(scale(x),
-              scale(z), s, s);
-          g.setColor(chunk.getBiome(x, z).color);
+          final Rectangle2D rect =
+              new Rectangle2D.Double(scale(x), scale(z), s, s);
+          g.setColor(chunk.getBiome(new InChunkPosition(x, z)).color);
           g.fill(rect);
         }
       }
@@ -236,7 +237,7 @@ public class ChunkPainter {
    * @param pos The position.
    * @return Whether the position is visible.
    */
-  public boolean isValidPos(final Graphics2D g, final OwnChunkPosition pos) {
+  public boolean isValidPos(final Graphics2D g, final ChunkPosition pos) {
     final double x = scale(pos.x);
     final double z = scale(pos.z);
     final double len = scale(16);

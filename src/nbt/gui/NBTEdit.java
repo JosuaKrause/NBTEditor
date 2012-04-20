@@ -26,7 +26,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import nbt.map.Chunk;
-import nbt.map.pos.ChunkPosition;
+import nbt.map.pos.ChunkInFilePosition;
 import nbt.read.MapReader;
 import nbt.read.NBTReader;
 import nbt.record.NBTCompound;
@@ -239,9 +239,9 @@ public class NBTEdit extends JPanel {
           RegionFile.MCREGION_EXTENSION)) {
         MapReader.clearCache();
         final MapReader mr = MapReader.getForFile(file);
-        final List<ChunkPosition> coords = mr.getChunks();
-        final ChunkPosition chunk =
-            (ChunkPosition) JOptionPane.showInputDialog(frame,
+        final List<ChunkInFilePosition> coords = mr.getChunks();
+        final ChunkInFilePosition chunk =
+            (ChunkInFilePosition) JOptionPane.showInputDialog(frame,
                 "Choose the chunk to display", "Choose chunk",
                 JOptionPane.PLAIN_MESSAGE, null, coords.toArray(), null);
         r = chunk != null ? mr.read(chunk) : null;

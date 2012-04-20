@@ -36,9 +36,10 @@ import nbt.map.ChunkEdit;
 import nbt.map.ChunkManager;
 import nbt.map.ChunkPainter;
 import nbt.map.UpdateReceiver;
+import nbt.map.pos.ChunkPosition;
 import nbt.map.pos.InChunkPosition;
-import nbt.map.pos.OwnChunkPosition;
 import nbt.map.pos.ScreenPosition;
+import nbt.map.pos.WorldPosition;
 
 /**
  * The map viewer component. It shows a map and is interactable.
@@ -114,8 +115,9 @@ public class MapViewer extends JComponent implements UpdateReceiver {
           setLockedOffset(true);
           final int x = e.getX();
           final int z = e.getY();
-          selectAtScreen(x, z);
-          clickList.add(new ScreenPosition(x, z));
+          final ScreenPosition pos = new ScreenPosition(x, z);
+          selectAtScreen(pos);
+          clickList.add(pos);
           addSelectionShape(getClickReceiverShape(false), x, z);
         }
       }
@@ -124,7 +126,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
       public void mouseMoved(final MouseEvent e) {
         final int x = e.getX();
         final int z = e.getY();
-        selectAtScreen(x, z);
+        selectAtScreen(new ScreenPosition(x, z));
       }
 
       private void setOffset(final int x, final int y) {
@@ -318,45 +320,34 @@ public class MapViewer extends JComponent implements UpdateReceiver {
   /**
    * Getter.
    * 
-   * @param x The x position.
-   * @param z The z position.
+   * @param pos The position.
    * @return The chunk at the given position.
    */
-  protected Chunk getChunkAtScreen(final int x, final int z) {
-    final int cx =
-        (int) (painter.unscale(offX + x)) / 16 - (offX + x < 0 ? 1 : 0);
-    final int cz =
-        (int) (painter.unscale(offZ + z)) / 16 - (offZ + z < 0 ? 1 : 0);
-    return manager.getChunk(cx, cz);
+  protected Chunk getChunk(final WorldPosition pos) {
+    return manager.getChunk(pos.getPosOfChunk());
   }
 
   /**
    * Getter.
    * 
-   * @param x The x position.
-   * @param z The z position.
-   * @return The position within the chunk.
+   * @param pos The position on the screen.
+   * @return The corresponding world position.
    */
-  public InChunkPosition getPosInChunkAtScreen(final int x, final int z) {
-    final int cx = (int) (painter.unscale(offX + x)) % 16
-        + (offX + x < 0 ? 15 : 0);
-    final int cz = (int) (painter.unscale(offZ + z)) % 16
-        + (offZ + z < 0 ? 15 : 0);
-    return new InChunkPosition(cx, cz);
+  public WorldPosition getPositionOnScreen(final ScreenPosition pos) {
+    return pos.getWorldPosition(painter, offX, offZ);
   }
 
   /**
    * Edits a column.
    * 
-   * @param x The x coordinate.
-   * @param z The z coordinate.
+   * @param pos The position.
    * @param editor The editor.
    */
-  public void editChunk(final int x, final int z, final ChunkEdit editor) {
-    final Chunk c = getChunkAtScreen(x, z);
+  public void editChunk(final ScreenPosition pos, final ChunkEdit editor) {
+    final WorldPosition pw = getPositionOnScreen(pos);
+    final Chunk c = getChunk(pw);
     if(c == null) return;
-    final InChunkPosition p = getPosInChunkAtScreen(x, z);
-    manager.editChunk(c, p, editor);
+    manager.editChunk(c, pw.getPosInChunk(), editor);
   }
 
   private final class Waiter extends Thread {
@@ -446,16 +437,17 @@ public class MapViewer extends JComponent implements UpdateReceiver {
   /**
    * Selects a screen coordinate.
    * 
-   * @param x The x position.
-   * @param z The z position.
+   * @param pos The position.
    */
-  public void selectAtScreen(final int x, final int z) {
-    selChunk = getChunkAtScreen(x, z);
-    selPos = getPosInChunkAtScreen(x, z);
+  public void selectAtScreen(final ScreenPosition pos) {
+    final WorldPosition pw = getPositionOnScreen(pos);
+    selChunk = getChunk(pw);
+    selPos = pw.getPosInChunk();
     if(selChunk != null) {
-      final String tt = "x:" + (selPos.x + selChunk.getX()) + " z:"
-          + (selPos.z + selChunk.getZ()) + " b: "
-          + selChunk.getBiome(selPos.x, selPos.z).name;
+      final ChunkPosition p = selChunk.getPos();
+      final String tt =
+          "x:" + (selPos.x + p.x) + " z:" + (selPos.z + p.z) + " b: "
+              + selChunk.getBiome(selPos).name;
       frame.setTitleText(tt);
       setToolTipText(tt);
     } else {
@@ -473,17 +465,17 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     g.setColor(getBackground());
     g.fill(r);
     g.translate(-offX, -offZ);
-    final OwnChunkPosition[] reloadEntries = manager.getReloadEntries();
-    for(final OwnChunkPosition pos : reloadEntries) {
+    final ChunkPosition[] reloadEntries = manager.getReloadEntries();
+    for(final ChunkPosition pos : reloadEntries) {
       if(painter.isValidPos(g, pos)) {
         manager.needsReload(pos);
       }
     }
-    final OwnChunkPosition[] chunksEntries = manager.getChunkEntries();
+    final ChunkPosition[] chunksEntries = manager.getChunkEntries();
     boolean hasMid = false;
     double midX = 0;
     double midZ = 0;
-    for(final OwnChunkPosition pos : chunksEntries) {
+    for(final ChunkPosition pos : chunksEntries) {
       final Chunk c = manager.getChunk(pos);
       if(!painter.isValidPos(g, pos)) {
         manager.mayUnload(c);

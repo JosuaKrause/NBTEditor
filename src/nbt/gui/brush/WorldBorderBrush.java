@@ -5,6 +5,7 @@ import nbt.map.Biomes;
 import nbt.map.Blocks;
 import nbt.map.Chunk;
 import nbt.map.pos.InChunkPosition;
+import nbt.map.pos.Position3D;
 
 /**
  * Replaces all blocks with air or water sources depending on height. This
@@ -31,19 +32,18 @@ public class WorldBorderBrush extends Brush {
 
   @Override
   protected void edit(final Chunk c, final InChunkPosition posInChunk) {
-    final int x = posInChunk.x;
-    final int z = posInChunk.z;
     for(int y = 0; y <= Chunk.WORLD_HEIGHT; ++y) {
       if(!c.canSetBlock(y)) {
         continue;
       }
+      final Position3D pos = new Position3D(posInChunk, y);
       if(y <= 65) {
-        c.setBlock(x, y, z, Blocks.WATER_STAT);
+        c.setBlock(pos, Blocks.WATER_STAT);
       } else {
-        c.setBlock(x, y, z, Blocks.AIR);
+        c.setBlock(pos, Blocks.AIR);
       }
     }
-    c.setBiome(x, z, Biomes.OCEAN);
+    c.setBiome(posInChunk, Biomes.OCEAN);
   }
 
 }

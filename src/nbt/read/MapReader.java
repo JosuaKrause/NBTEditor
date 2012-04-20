@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nbt.map.pos.ChunkPosition;
+import nbt.map.pos.ChunkInFilePosition;
 import nbt.record.NBTCompound;
 import nbt.record.NBTRecord;
 import nbt.record.NBTType;
@@ -61,8 +61,8 @@ public final class MapReader {
    * 
    * @return Creates a list of chunks in this region file.
    */
-  public synchronized List<ChunkPosition> getChunks() {
-    final List<ChunkPosition> res = new ArrayList<ChunkPosition>();
+  public synchronized List<ChunkInFilePosition> getChunks() {
+    final List<ChunkInFilePosition> res = new ArrayList<ChunkInFilePosition>();
     try {
       for(int x = 0; x < 32; x++) {
         for(int z = 0; z < 32; z++) {
@@ -73,7 +73,7 @@ public final class MapReader {
               System.err.println("Failed to fetch input stream");
               continue;
             }
-            res.add(new ChunkPosition(x, z));
+            res.add(new ChunkInFilePosition(x, z));
             regionChunkInputStream.close();
           }
         }
@@ -90,7 +90,7 @@ public final class MapReader {
    * @param pos The position of the chunk.
    * @return The record.
    */
-  public synchronized NBTCompound read(final ChunkPosition pos) {
+  public synchronized NBTCompound read(final ChunkInFilePosition pos) {
     NBTCompound rec = null;
     try {
       if(regionSource.hasChunk(pos.x, pos.z)) {
