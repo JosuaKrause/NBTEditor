@@ -30,7 +30,7 @@ public final class ScreenPosition extends Pair {
   public WorldPosition getWorldPosition(final ChunkPainter painter,
       final int offX, final int offZ) {
     return new WorldPosition((int) painter.unscale(offX + x),
-        (int) painter.unscale(offZ + z), offX + x < 0, offZ + z < 0);
+        (int) painter.unscale(offZ + z));
   }
 
 }
