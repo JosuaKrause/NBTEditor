@@ -15,6 +15,25 @@ import nbt.map.pos.WorldPosition;
 public class World {
 
   /**
+   * Represents the game type.
+   * 
+   * @author Joschi <josua.krause@googlemail.com>
+   */
+  public static enum GameType {
+    /**
+     * Survival mode.
+     */
+    SURVIVAL,
+
+    /**
+     * Creative mode.
+     */
+    CREATIVE,
+
+    /* end of declaration */;
+  }
+
+  /**
    * Represents one of the game dimensions.
    * 
    * @author Joschi <josua.krause@googlemail.com>
