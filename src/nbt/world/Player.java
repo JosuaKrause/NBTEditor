@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
+import nbt.map.pos.GamePosition;
 import nbt.record.NBTCompound;
 import nbt.record.NBTHandler;
 import nbt.record.NBTList;
 import nbt.record.NBTNumeric;
+import nbt.world.World.GameType;
 import nbt.world.World.WorldDimension;
 
 /**
@@ -70,6 +72,15 @@ public class Player extends NBTHandler {
   /**
    * Getter.
    * 
+   * @return Whether this player is the single player.
+   */
+  public boolean isSinglePlayer() {
+    return name.isEmpty();
+  }
+
+  /**
+   * Getter.
+   * 
    * @return Gets the actual player root record. Note that this is not
    *         necessarily equal to {@link #getRoot()}.
    */
@@ -82,49 +93,31 @@ public class Player extends NBTHandler {
    * 
    * @return The player position.
    */
-  protected NBTList<NBTNumeric<Double>> getPosition() {
+  protected NBTList<NBTNumeric<Double>> getNBTPosition() {
     return playerRecord.get("Pos");
   }
 
   /**
    * Getter.
    * 
-   * @return The player x position.
+   * @return The player position.
    */
-  public double getXPosition() {
-    return getPosition().getAt(0).getPayload();
-  }
-
-  /**
-   * Getter.
-   * 
-   * @return The player y position.
-   */
-  public double getYPosition() {
-    return getPosition().getAt(1).getPayload();
-  }
-
-  /**
-   * Getter.
-   * 
-   * @return The player z position.
-   */
-  public double getZPosition() {
-    return getPosition().getAt(2).getPayload();
+  public GamePosition getPosition() {
+    final NBTList<NBTNumeric<Double>> list = getNBTPosition();
+    return new GamePosition(list.getAt(0).getPayload(),
+        list.getAt(1).getPayload(), list.getAt(2).getPayload());
   }
 
   /**
    * Sets the position of the player.
    * 
-   * @param x The x coordinate.
-   * @param y The y coordinate.
-   * @param z The z coordinate.
+   * @param pos The position.
    */
-  public void setPosition(final double x, final double y, final double z) {
-    final NBTList<NBTNumeric<Double>> pos = getPosition();
-    pos.getAt(0).setPayload(x);
-    pos.getAt(1).setPayload(y);
-    pos.getAt(2).setPayload(z);
+  public void setPosition(final GamePosition pos) {
+    final NBTList<NBTNumeric<Double>> p = getNBTPosition();
+    p.getAt(0).setPayload(pos.x);
+    p.getAt(1).setPayload(pos.y);
+    p.getAt(2).setPayload(pos.z);
   }
 
   /**
@@ -170,6 +163,56 @@ public class Player extends NBTHandler {
         break;
       case END:
         d.setPayload(1);
+        break;
+    }
+  }
+
+  /**
+   * Getter.
+   * 
+   * @return The game type field for the player or <code>null</code> if this is
+   *         a single player nbt record.
+   */
+  protected NBTNumeric<Integer> getNBTGameType() {
+    return playerRecord.get("playerGameType");
+  }
+
+  /**
+   * Getter.
+   * 
+   * @return The game type of the player. Note that only multi-player player
+   *         have individual game types. Check with {@link #isSinglePlayer()}.
+   */
+  public GameType getGameType() {
+    final NBTNumeric<Integer> gt = getNBTGameType();
+    if(gt == null) throw new IllegalStateException(
+        "single player does not have a game type");
+    switch(gt.getPayload()) {
+      case 0:
+        return GameType.SURVIVAL;
+      case 1:
+        return GameType.CREATIVE;
+    }
+    throw new InternalError();
+  }
+
+  /**
+   * Setter.
+   * 
+   * @param type Sets the game type of the player. Note that only multi-player
+   *          player have individual game types. Check with
+   *          {@link #isSinglePlayer()}.
+   */
+  public void setGameType(final GameType type) {
+    final NBTNumeric<Integer> gt = getNBTGameType();
+    if(gt == null) throw new IllegalStateException(
+        "single player does not have a game type");
+    switch(type) {
+      case SURVIVAL:
+        gt.setPayload(0);
+        break;
+      case CREATIVE:
+        gt.setPayload(1);
         break;
     }
   }

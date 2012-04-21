@@ -3,9 +3,11 @@ package nbt.world;
 import java.io.File;
 import java.io.IOException;
 
+import nbt.map.pos.GamePosition;
 import nbt.record.NBTCompound;
 import nbt.record.NBTHandler;
 import nbt.record.NBTNumeric;
+import nbt.world.World.GameType;
 
 /**
  * Represents the level information file.
@@ -57,7 +59,7 @@ public class Level extends NBTHandler {
    * 
    * @return The spawn x coordinate.
    */
-  public NBTNumeric<Integer> getSpawnX() {
+  protected NBTNumeric<Integer> getSpawnX() {
     return data.get("SpawnX");
   }
 
@@ -66,7 +68,7 @@ public class Level extends NBTHandler {
    * 
    * @return The spawn y coordinate.
    */
-  public NBTNumeric<Integer> getSpawnY() {
+  protected NBTNumeric<Integer> getSpawnY() {
     return data.get("SpawnY");
   }
 
@@ -75,21 +77,70 @@ public class Level extends NBTHandler {
    * 
    * @return The spawn z coordinate.
    */
-  public NBTNumeric<Integer> getSpawnZ() {
+  protected NBTNumeric<Integer> getSpawnZ() {
     return data.get("SpawnZ");
   }
 
   /**
    * Sets the spawn of the world.
    * 
-   * @param x The x coordinate.
-   * @param y The y coordinate.
-   * @param z The z coordinate.
+   * @param pos The spawn.
    */
-  public void setSpawn(final int x, final int y, final int z) {
-    getSpawnX().setPayload(x);
-    getSpawnY().setPayload(y);
-    getSpawnZ().setPayload(z);
+  public void setSpawn(final GamePosition pos) {
+    getSpawnX().setPayload((int) pos.x);
+    getSpawnY().setPayload((int) pos.y);
+    getSpawnZ().setPayload((int) pos.z);
+  }
+
+  /**
+   * Getter.
+   * 
+   * @return The spawn.
+   */
+  public GamePosition getSpawn() {
+    return new GamePosition(getSpawnX().getPayload(), getSpawnY().getPayload(),
+        getSpawnZ().getPayload());
+  }
+
+  /**
+   * Getter.
+   * 
+   * @return The game type field.
+   */
+  protected NBTNumeric<Integer> getNBTGameType() {
+    return data.get("GameType");
+  }
+
+  /**
+   * Setter.
+   * 
+   * @param type Sets the game type.
+   */
+  public void setGameType(final GameType type) {
+    final NBTNumeric<Integer> t = getNBTGameType();
+    switch(type) {
+      case SURVIVAL:
+        t.setPayload(0);
+        break;
+      case CREATIVE:
+        t.setPayload(1);
+        break;
+    }
+  }
+
+  /**
+   * Getter.
+   * 
+   * @return Gets the game type.
+   */
+  public GameType getGameType() {
+    switch(getNBTGameType().getPayload()) {
+      case 0:
+        return GameType.SURVIVAL;
+      case 1:
+        return GameType.CREATIVE;
+    }
+    throw new InternalError();
   }
 
   /**
