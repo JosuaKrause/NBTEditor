@@ -306,7 +306,6 @@ public class MapViewer extends JComponent implements UpdateReceiver {
   @Override
   public void somethingChanged() {
     repaint();
-    grabFocus();
   }
 
   private Controls controls;
