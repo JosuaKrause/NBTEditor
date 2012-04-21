@@ -7,12 +7,14 @@ import nbt.map.Biomes;
 import nbt.map.Blocks;
 import nbt.map.Chunk;
 import nbt.map.SerialChunkManager;
+import nbt.map.pos.GamePosition;
 import nbt.map.pos.InChunkPosition;
 import nbt.map.pos.Position3D;
 import nbt.map.pos.WorldPosition;
 import nbt.world.Level;
 import nbt.world.Player;
 import nbt.world.World;
+import nbt.world.World.GameType;
 import nbt.world.World.WorldDimension;
 
 /**
@@ -27,12 +29,13 @@ public final class MainHardcore {
   }
 
   private static void usageAndDie() {
-    System.err.println("Usage: [-r <radius>] [-b <border>] [-spn] <world>");
+    System.err.println("Usage: [-r <radius>] [-b <border>] [-spng] <world>");
     System.err.println("-r: <radius> defines the area where the hardcore game is played");
     System.err.println("-b: <border> defines the border of the game area");
     System.err.println("-s: sets the spawn to a place outside of the game area");
     System.err.println("-p: places the players randomly in the game area");
     System.err.println("-n: creates no border");
+    System.err.println("-g: sets the game type to survival");
     System.exit(1);
   }
 
@@ -51,6 +54,7 @@ public final class MainHardcore {
       boolean setPlayer = false;
       boolean resetSpawn = false;
       boolean noBorder = false;
+      boolean survival = false;
       int radius = 700;
       int border = 80;
       for(int i = 0; i < args.length; ++i) {
@@ -73,6 +77,9 @@ public final class MainHardcore {
           if(a.contains("n")) {
             noBorder = true;
           }
+          if(a.contains("g")) {
+            survival = true;
+          }
         } else {
           switch(opt) {
             case 0:
@@ -92,9 +99,13 @@ public final class MainHardcore {
         }
       }
       final World w = new World(world);
+      if(survival) {
+        System.err.println("[info] setting game type to survival");
+        w.getLevelDat().setGameType(GameType.SURVIVAL);
+      }
       if(setPlayer) {
         System.err.println("[info] setting player positions");
-        setPlayers(w, radius);
+        setPlayers(w, radius, survival);
       }
       if(resetSpawn) {
         System.err.println("[info] resetting spawn");
@@ -116,12 +127,7 @@ public final class MainHardcore {
     final int spawn = Math.max(1000000, (radius + border) * 2);
     final WorldPosition wp = new WorldPosition(spawn, 0);
     final Level dat = w.getLevelDat();
-    dat.setSpawn(
-        spawn,
-        (w.chunkExists(wp, WorldDimension.OVERWORLD)
-            ? w.getTopMostPosition(wp, WorldDimension.OVERWORLD)
-            : 64) + 1,
-        0);
+    dat.setSpawn(new GamePosition(wp, w, WorldDimension.OVERWORLD).spawnOnTop());
     dat.save();
   }
 
@@ -129,7 +135,8 @@ public final class MainHardcore {
     return Math.random() * rad * 2 - rad;
   }
 
-  private static void setPlayers(final World w, final int radius)
+  private static void setPlayers(final World w, final int radius,
+      final boolean survival)
       throws IOException {
     for(final Player p : w.getPlayers()) {
       System.err.println("[info] setting position of player " + p.getName());
@@ -137,11 +144,11 @@ public final class MainHardcore {
       final double z = random(radius);
       final WorldPosition wp = new WorldPosition((int) x, (int) z);
       p.setDimension(WorldDimension.OVERWORLD);
-      final double y =
-          w.chunkExists(wp, WorldDimension.OVERWORLD)
-              ? w.getTopMostPosition(wp, WorldDimension.OVERWORLD)
-              : 64;
-      p.setPosition(x + .5, y + 1.5, z + .5);
+      final GamePosition gp = new GamePosition(wp, w, WorldDimension.OVERWORLD);
+      p.setPosition(gp.playerOnTop());
+      if(survival && !p.isSinglePlayer()) {
+        p.setGameType(GameType.SURVIVAL);
+      }
       p.save();
     }
   }
@@ -169,7 +176,7 @@ public final class MainHardcore {
       final boolean hor, final boolean positive, final Chunk lc) {
     Chunk lastChunk = lc;
     final int a = positive ? dist : -dist;
-    for(int t = -dist; t < dist; ++t) {
+    for(int t = -dist; t <= dist; ++t) {
       final WorldPosition pos = new WorldPosition(hor ? t : a, hor ? a : t);
       final Chunk chunk = ow.getChunk(pos);
       if(chunk != lastChunk) {
