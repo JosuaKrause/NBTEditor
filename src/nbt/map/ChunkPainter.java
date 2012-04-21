@@ -44,7 +44,11 @@ public class ChunkPainter {
 
   private final Set<Chunk> chunksToDraw = new HashSet<Chunk>();
 
+  private final Set<Chunk> biomesToDraw = new HashSet<Chunk>();
+
   private final Map<Chunk, Image> imgCache = new HashMap<Chunk, Image>();
+
+  private final Map<Chunk, Image> biomeCache = new HashMap<Chunk, Image>();
 
   private final Object drawLock = new Object();
 
@@ -69,7 +73,7 @@ public class ChunkPainter {
     }
   }
 
-  private void drawChunk0(final Chunk chunk) {
+  private void drawChunk(final Chunk chunk) {
     final BufferedImage img = new BufferedImage((int) (scale * 16),
         (int) (scale * 16), BufferedImage.TYPE_INT_RGB);
     final Graphics2D gi = (Graphics2D) img.getGraphics();
@@ -77,7 +81,8 @@ public class ChunkPainter {
       for(int z = 0; z < 16; ++z) {
         final Rectangle2D rect = new Rectangle2D.Double(x * scale, z
             * scale, scale, scale);
-        gi.setColor(chunk.getColorForColumn(new InChunkPosition(x, z)));
+        final InChunkPosition pos = new InChunkPosition(x, z);
+        gi.setColor(chunk.getColorForColumn(pos));
         gi.fill(rect);
       }
     }
@@ -86,6 +91,25 @@ public class ChunkPainter {
       if(imgCache.containsKey(chunk)) {
         imgCache.put(chunk, img);
       }
+    }
+  }
+
+  private void drawBiome(final Chunk chunk) {
+    final BufferedImage biome = new BufferedImage((int) (scale * 16),
+        (int) (scale * 16), BufferedImage.TYPE_INT_ARGB);
+    final Graphics2D gb = (Graphics2D) biome.getGraphics();
+    for(int x = 0; x < 16; ++x) {
+      for(int z = 0; z < 16; ++z) {
+        final Rectangle2D rect = new Rectangle2D.Double(x * scale, z
+            * scale, scale, scale);
+        final InChunkPosition pos = new InChunkPosition(x, z);
+        gb.setColor(chunk.getBiome(pos).color);
+        gb.fill(rect);
+      }
+    }
+    gb.dispose();
+    synchronized(biomeCache) {
+      biomeCache.put(chunk, biome);
     }
   }
 
@@ -125,12 +149,32 @@ public class ChunkPainter {
     Chunk c;
     synchronized(chunksToDraw) {
       final Iterator<Chunk> it = chunksToDraw.iterator();
-      if(!it.hasNext()) return;
-      c = it.next();
-      it.remove();
+      if(!it.hasNext()) {
+        c = null;
+      } else {
+        c = it.next();
+        it.remove();
+      }
     }
-    drawChunk0(c);
-    somethingChanged();
+    if(c != null) {
+      drawChunk(c);
+    }
+    Chunk b;
+    synchronized(biomesToDraw) {
+      final Iterator<Chunk> it = biomesToDraw.iterator();
+      if(!it.hasNext()) {
+        b = null;
+      } else {
+        b = it.next();
+        it.remove();
+      }
+    }
+    if(b != null) {
+      drawBiome(b);
+    }
+    if(c != null || b != null) {
+      somethingChanged();
+    }
   }
 
   /**
@@ -142,6 +186,11 @@ public class ChunkPainter {
     boolean b;
     synchronized(chunksToDraw) {
       b = chunksToDraw.isEmpty();
+    }
+    if(b) {
+      synchronized(biomesToDraw) {
+        b = biomesToDraw.isEmpty();
+      }
     }
     return !b;
   }
@@ -185,25 +234,40 @@ public class ChunkPainter {
       synchronized(imgCache) {
         imgCache.put(chunk, loading);
       }
+      final Image biome;
+      synchronized(biomeCache) {
+        biome = biomeCache.remove(chunk);
+      }
+      if(biome != null) {
+        biome.flush();
+      }
       synchronized(chunksToDraw) {
         chunksToDraw.add(chunk);
       }
+      if(showBiomes) {
+        synchronized(biomesToDraw) {
+          biomesToDraw.add(chunk);
+        }
+      }
       notifyDrawer();
     }
-    Image img;
+    final Image img;
     synchronized(imgCache) {
       img = imgCache.get(chunk);
     }
     g.drawImage(img, 0, 0, null);
     if(showBiomes) {
-      final double s = scale(1);
-      for(int x = 0; x < 16; ++x) {
-        for(int z = 0; z < 16; ++z) {
-          final Rectangle2D rect =
-              new Rectangle2D.Double(scale(x), scale(z), s, s);
-          g.setColor(chunk.getBiome(new InChunkPosition(x, z)).color);
-          g.fill(rect);
+      final Image biome;
+      synchronized(biomeCache) {
+        biome = biomeCache.get(chunk);
+      }
+      if(biome != null) {
+        g.drawImage(biome, 0, 0, null);
+      } else {
+        synchronized(biomesToDraw) {
+          biomesToDraw.add(chunk);
         }
+        notifyDrawer();
       }
     }
   }
@@ -227,6 +291,27 @@ public class ChunkPainter {
     }
     if(img != null) {
       img.flush();
+    }
+    final Image biome;
+    synchronized(biomeCache) {
+      biome = biomeCache.remove(chunk);
+    }
+    if(biome != null) {
+      biome.flush();
+    }
+  }
+
+  /**
+   * Clears all biome images.
+   */
+  public void clearBiomes() {
+    synchronized(biomeCache) {
+      for(final Image biome : biomeCache.values()) {
+        if(biome != null) {
+          biome.flush();
+        }
+      }
+      biomeCache.clear();
     }
   }
 

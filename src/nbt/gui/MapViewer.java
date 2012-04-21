@@ -612,4 +612,26 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     }
   }
 
+  @Override
+  public synchronized void memoryPanic() {
+    System.err.println("full memory cleanup");
+    System.err.print("before: ");
+    printMemStat();
+    painter.clearBiomes();
+    manager.unloadAllowed();
+    for(int i = 0; i < 6; ++i) {
+      System.gc();
+    }
+    System.err.print("after: ");
+    printMemStat();
+  }
+
+  private static void printMemStat() {
+    final Runtime r = Runtime.getRuntime();
+    final long free = r.freeMemory();
+    final long max = r.maxMemory();
+    final double ratio = (double) free / (double) max;
+    System.err.println("free memory / max memory: " + ratio);
+  }
+
 }
