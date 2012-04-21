@@ -7,6 +7,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -19,10 +21,14 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JProgressBar;
+import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 
 import nbt.map.Chunk;
@@ -95,6 +101,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
           tmpOffZ = getZOffset();
           drag = true;
         }
+        grabFocus();
       }
 
       @Override
@@ -160,6 +167,23 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     addMouseListener(mouse);
     addMouseMotionListener(mouse);
     addMouseWheelListener(mouse);
+    final InputMap inp = new InputMap();
+    inp.put(KeyStroke.getKeyStroke(KeyEvent.VK_B, 0), "BIOME");
+    final ActionMap am = new ActionMap();
+    am.put("BIOME", new AbstractAction() {
+
+      private static final long serialVersionUID = -5517714907864610590L;
+
+      @Override
+      public void actionPerformed(final ActionEvent e) {
+        toggleBiomes();
+      }
+
+    });
+    setActionMap(am);
+    setInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, inp);
+    setFocusable(true);
+    grabFocus();
     setBackground(Color.BLACK);
   }
 
@@ -212,6 +236,13 @@ public class MapViewer extends JComponent implements UpdateReceiver {
   }
 
   /**
+   * Toggles whether to show biome data in the map view.
+   */
+  public void toggleBiomes() {
+    painter.setShowBiomes(!painter.showsBiomes());
+  }
+
+  /**
    * Setter.
    * 
    * @param file The map folder.
@@ -221,6 +252,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     final Dimension size = getSize();
     offX = -size.width / 2;
     offZ = -size.height / 2;
+    grabFocus();
   }
 
   /**
@@ -274,6 +306,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
   @Override
   public void somethingChanged() {
     repaint();
+    grabFocus();
   }
 
   private Controls controls;
@@ -555,6 +588,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     clickReceiver = cr;
     frame.setBrush(clickReceiver != null ? clickReceiver.name() : null);
     repaint();
+    grabFocus();
   }
 
   /**
@@ -576,6 +610,28 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     if(clickReceiver != null) {
       clickReceiver.clicked(x, z);
     }
+  }
+
+  @Override
+  public synchronized void memoryPanic() {
+    System.err.println("full memory cleanup");
+    System.err.print("before: ");
+    printMemStat();
+    painter.clearBiomes();
+    manager.unloadAllowed();
+    for(int i = 0; i < 6; ++i) {
+      System.gc();
+    }
+    System.err.print("after: ");
+    printMemStat();
+  }
+
+  private static void printMemStat() {
+    final Runtime r = Runtime.getRuntime();
+    final long free = r.freeMemory();
+    final long max = r.maxMemory();
+    final double ratio = (double) free / (double) max;
+    System.err.println("free memory / max memory: " + ratio);
   }
 
 }

@@ -126,8 +126,10 @@ public class ChunkManager {
     }
   }
 
-  private void handleFullMemory() {
-    System.err.println("full memory cleanup");
+  /**
+   * Unloads all chunks that are not visible without allocating much memory.
+   */
+  public void unloadAllowed() {
     for(;;) {
       // allocating no more memory but avoiding
       // concurrent modification exception
@@ -142,7 +144,6 @@ public class ChunkManager {
       }
       unloadChunk(c);
     }
-    System.gc();
   }
 
   /**
@@ -238,7 +239,7 @@ public class ChunkManager {
         }
         if(canUnload) {
           beFriendly = false;
-          handleFullMemory();
+          user.memoryPanic();
         } else if(e == OWN_MEM) {
           beFriendly = true;
         } else throw new Error(e);

@@ -24,6 +24,8 @@ public abstract class Brush implements ClickReceiver {
 
   private int r2;
 
+  private int dr;
+
   /**
    * Creates a brush for a given map viewer.
    * 
@@ -49,6 +51,7 @@ public abstract class Brush implements ClickReceiver {
   public void setRadius(final int newRadius) {
     radius = newRadius;
     r2 = radius * radius;
+    dr = radius * 2;
   }
 
   @Override
@@ -58,9 +61,10 @@ public abstract class Brush implements ClickReceiver {
 
   @Override
   public void clicked(final int x, final int z) {
-    for(int i = -radius * 2; i <= radius * 2; ++i) {
-      for(int j = -radius * 2; j <= radius * 2; ++j) {
-        if(i * i + j * j > 4 * r2) {
+    for(int i = -dr; i <= dr; ++i) {
+      final int isq = i * i;
+      for(int j = -dr; j <= dr; ++j) {
+        if(circle && (isq + j * j > 4 * r2)) {
           continue;
         }
         final int posX = x + i;
