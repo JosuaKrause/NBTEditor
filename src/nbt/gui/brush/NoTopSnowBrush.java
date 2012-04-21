@@ -18,9 +18,12 @@ public class NoTopSnowBrush extends Brush {
    * 
    * @param viewer The viewer.
    * @param radius The initial radius.
+   * @param onlyOnTop Whether only top blocks should be removed.
    */
-  public NoTopSnowBrush(final MapViewer viewer, final int radius) {
+  public NoTopSnowBrush(final MapViewer viewer, final int radius,
+      final boolean onlyOnTop) {
     super(viewer, radius, true);
+    this.onlyOnTop = onlyOnTop;
   }
 
   @Override
@@ -28,19 +31,27 @@ public class NoTopSnowBrush extends Brush {
     return "No Snow (" + radius() + ")";
   }
 
+  private final boolean onlyOnTop;
+
   @Override
   protected void edit(final Chunk c, final InChunkPosition p) {
-    final Position3D pos = c.getTopNonAirBlock(p);
-    final Blocks b = c.getBlock(pos);
-    switch(b) {
-      case SNOW:
-        c.setBlock(pos, Blocks.AIR);
+    Position3D pos = c.getTopNonAirBlock(p);
+    while(pos.y >= 0) {
+      final Blocks b = c.getBlock(pos);
+      switch(b) {
+        case SNOW:
+          c.setBlock(pos, Blocks.AIR);
+          break;
+        case ICE:
+          c.setBlock(pos, Blocks.WATER_STAT);
+          break;
+        default:
+          break;
+      }
+      if(onlyOnTop) {
         break;
-      case ICE:
-        c.setBlock(pos, Blocks.WATER_STAT);
-        break;
-      default:
-        break;
+      }
+      pos = new Position3D(pos.x, pos.y - 1, pos.z);
     }
   }
 

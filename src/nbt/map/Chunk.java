@@ -238,10 +238,10 @@ public class Chunk {
   }
 
   /**
-   * Whether the given coordinate can be edited.
+   * Whether the corresponding block exists.
    * 
    * @param y The y coordinate.
-   * @return If the value can be edited.
+   * @return Whether there is a block at the given position that can be edited.
    */
   public boolean canEdit(final int y) {
     final int sectionY = y / 16;

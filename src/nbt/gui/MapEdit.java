@@ -17,7 +17,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import nbt.gui.brush.BiomeBrush;
+import nbt.gui.brush.DesertBrush;
 import nbt.gui.brush.NoTopSnowBrush;
+import nbt.gui.brush.WorldBorderBrush;
 
 /**
  * The controller panel for the map editor.
@@ -82,7 +84,18 @@ public class MapEdit extends JPanel implements Controls {
       @Override
       public void actionPerformed(final ActionEvent e) {
         final MapViewer view = getView();
-        view.setClickReceiver(new NoTopSnowBrush(view, getRadius()));
+        view.setClickReceiver(new NoTopSnowBrush(view, getRadius(), true));
+      }
+
+    }));
+    add(new JButton(new AbstractAction("Desert Brush") {
+
+      private static final long serialVersionUID = -16006819268382428L;
+
+      @Override
+      public void actionPerformed(final ActionEvent e) {
+        final MapViewer view = getView();
+        view.setClickReceiver(DesertBrush.brushGUI(frame, view, getRadius()));
       }
 
     }));
@@ -94,6 +107,17 @@ public class MapEdit extends JPanel implements Controls {
       public void actionPerformed(final ActionEvent e) {
         final MapViewer view = getView();
         view.setClickReceiver(BiomeBrush.getBrushGUI(frame, view, getRadius()));
+      }
+
+    }));
+    add(new JButton(new AbstractAction("World Border Brush") {
+
+      private static final long serialVersionUID = -5333405739914885063L;
+
+      @Override
+      public void actionPerformed(final ActionEvent e) {
+        final MapViewer view = getView();
+        view.setClickReceiver(new WorldBorderBrush(view, getRadius()));
       }
 
     }));
@@ -131,7 +155,7 @@ public class MapEdit extends JPanel implements Controls {
     final ClickReceiver clickReceiver = view.getClickReceiver();
     if(clickReceiver == null) return;
     clickReceiver.setRadius(radius);
-    view.repaint();
+    view.somethingChanged();
   }
 
   /**

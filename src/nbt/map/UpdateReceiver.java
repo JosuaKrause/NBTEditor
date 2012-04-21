@@ -12,4 +12,10 @@ public interface UpdateReceiver {
    */
   void somethingChanged();
 
+  /**
+   * Advises the update receiver to get rid of as much memory as possible
+   * without allocating additional memory.
+   */
+  void memoryPanic();
+
 }
