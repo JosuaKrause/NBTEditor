@@ -101,6 +101,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
           tmpOffZ = getZOffset();
           drag = true;
         }
+        grabFocus();
       }
 
       @Override
@@ -251,6 +252,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     final Dimension size = getSize();
     offX = -size.width / 2;
     offZ = -size.height / 2;
+    grabFocus();
   }
 
   /**
@@ -304,6 +306,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
   @Override
   public void somethingChanged() {
     repaint();
+    grabFocus();
   }
 
   private Controls controls;

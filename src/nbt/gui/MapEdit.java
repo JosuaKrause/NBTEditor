@@ -155,7 +155,7 @@ public class MapEdit extends JPanel implements Controls {
     final ClickReceiver clickReceiver = view.getClickReceiver();
     if(clickReceiver == null) return;
     clickReceiver.setRadius(radius);
-    view.repaint();
+    view.somethingChanged();
   }
 
   /**
