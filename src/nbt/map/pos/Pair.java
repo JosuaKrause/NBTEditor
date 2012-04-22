@@ -24,7 +24,7 @@ class Pair {
 
   @Override
   public String toString() {
-    return "x: " + x + " z: " + z;
+    return getClass().getName() + "[x: " + x + " z: " + z + "]";
   }
 
   @Override
@@ -37,4 +37,5 @@ class Pair {
     final Pair p = (Pair) obj;
     return p.x == x && p.z == z;
   }
+
 }
