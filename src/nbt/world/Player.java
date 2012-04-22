@@ -105,7 +105,7 @@ public class Player extends NBTHandler {
   public GamePosition getPosition() {
     final NBTList<NBTNumeric<Double>> list = getNBTPosition();
     return new GamePosition(list.getAt(0).getPayload(),
-        list.getAt(1).getPayload(), list.getAt(2).getPayload());
+        list.getAt(1).getPayload(), list.getAt(2).getPayload(), getDimension());
   }
 
   /**
@@ -118,6 +118,7 @@ public class Player extends NBTHandler {
     p.getAt(0).setPayload(pos.x);
     p.getAt(1).setPayload(pos.y);
     p.getAt(2).setPayload(pos.z);
+    setDimension(pos.dim);
   }
 
   /**

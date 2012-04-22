@@ -10,7 +10,7 @@ The following jars are generated:
 -   *nbt*
 
     A command line version to generate readable nbt representations.
-    In combination with with the source package this jar can be
+    In combination with the source package this jar can be
     imported in other projects to use the nbt api.
   
 -   *nbt_edit*
@@ -27,6 +27,14 @@ The following jars are generated:
     So you better should backup your world before loading it
     in this editor. Edit the world by choosing a brush and
     right click on the map. The slider can be used to set the radius.
+
+-   *ultrahc.jar*
+
+    Converts a world to a ultra hardcore world. The root folder
+    of the world must be provided as an argument. This program
+    generates a border for the map and allows to reset the spawn
+    to a position outside of the area, position players ready to fight,
+    and ensures that the game type for all players is survival.
 
 -   *nbt_src*
 
@@ -106,3 +114,8 @@ This project also provides an api to manipulate nbt files.
 With the classes `nbt.read.NBTReader` and `nbt.write.NBTWriter`
 streams or files containing nbt content can be read and written.
 The class `nbt.record.NBTRecord` is the main class for nbt content.
+
+Another way of using the api is the class `nbt.world.World`. It
+provides an interface to manipulate worlds. For the most things
+this works without the explicit use of NBTRecords and provides easy
+to use methods to manipulate settings of the world or the maps.

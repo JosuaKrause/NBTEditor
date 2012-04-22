@@ -8,6 +8,7 @@ import nbt.record.NBTCompound;
 import nbt.record.NBTHandler;
 import nbt.record.NBTNumeric;
 import nbt.world.World.GameType;
+import nbt.world.World.WorldDimension;
 
 /**
  * Represents the level information file.
@@ -87,6 +88,8 @@ public class Level extends NBTHandler {
    * @param pos The spawn.
    */
   public void setSpawn(final GamePosition pos) {
+    if(pos.dim != WorldDimension.OVERWORLD) throw new IllegalArgumentException(
+        "spawns may only be in the overworld - got: " + pos.dim);
     getSpawnX().setPayload((int) pos.x);
     getSpawnY().setPayload((int) pos.y);
     getSpawnZ().setPayload((int) pos.z);
@@ -99,7 +102,7 @@ public class Level extends NBTHandler {
    */
   public GamePosition getSpawn() {
     return new GamePosition(getSpawnX().getPayload(), getSpawnY().getPayload(),
-        getSpawnZ().getPayload());
+        getSpawnZ().getPayload(), WorldDimension.OVERWORLD);
   }
 
   /**

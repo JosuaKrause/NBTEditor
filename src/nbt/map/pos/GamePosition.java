@@ -11,6 +11,11 @@ import nbt.world.World.WorldDimension;
 public class GamePosition {
 
   /**
+   * The dimension this position is in.
+   */
+  public final WorldDimension dim;
+
+  /**
    * The x coordinate.
    */
   public final double x;
@@ -31,11 +36,14 @@ public class GamePosition {
    * @param x The x coordinate.
    * @param y The y coordinate.
    * @param z The z coordinate.
+   * @param dim The dimension of the position.
    */
-  public GamePosition(final double x, final double y, final double z) {
+  public GamePosition(final double x, final double y, final double z,
+      final WorldDimension dim) {
     this.x = x;
     this.y = y;
     this.z = z;
+    this.dim = dim;
   }
 
   /**
@@ -44,9 +52,11 @@ public class GamePosition {
    * @param x The x coordinate.
    * @param y The y coordinate.
    * @param z The z coordinate.
+   * @param dim The dimension of the position.
    */
-  public GamePosition(final Double x, final Double y, final Double z) {
-    this((double) x, (double) y, (double) z);
+  public GamePosition(final Double x, final Double y, final Double z,
+      final WorldDimension dim) {
+    this((double) x, (double) y, (double) z, dim);
   }
 
   /**
@@ -55,11 +65,11 @@ public class GamePosition {
    * 
    * @param wp The world position.
    * @param w The world.
-   * @param dim The dimension the position should be in.
+   * @param dim The dimension the position is in.
    */
   public GamePosition(final WorldPosition wp, final World w,
       final WorldDimension dim) {
-    this(wp.x, getTopMostPositionAt(wp, w, dim), wp.z);
+    this(wp.x, getTopMostPositionAt(wp, w, dim), wp.z, dim);
   }
 
   /**
@@ -68,7 +78,7 @@ public class GamePosition {
    * @return The position on top of this block.
    */
   public GamePosition playerOnTop() {
-    return new GamePosition(x + .5, y + 1.7, z + .5);
+    return new GamePosition(x + .5, y + 1.7, z + .5, dim);
   }
 
   /**
@@ -77,7 +87,9 @@ public class GamePosition {
    * @return The position on top of this block.
    */
   public GamePosition spawnOnTop() {
-    return new GamePosition(x, y + 1, z);
+    if(dim != WorldDimension.OVERWORLD) throw new IllegalArgumentException(
+        "spawns may only be in the overworld - got: " + dim);
+    return new GamePosition(x, y + 1, z, dim);
   }
 
   /**

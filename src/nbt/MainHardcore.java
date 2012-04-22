@@ -143,7 +143,6 @@ public final class MainHardcore {
       final double x = random(radius);
       final double z = random(radius);
       final WorldPosition wp = new WorldPosition((int) x, (int) z);
-      p.setDimension(WorldDimension.OVERWORLD);
       final GamePosition gp = new GamePosition(wp, w, WorldDimension.OVERWORLD);
       p.setPosition(gp.playerOnTop());
       if(survival && !p.isSinglePlayer()) {
