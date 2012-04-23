@@ -111,6 +111,11 @@ public class ChunkPainter {
   }
 
   /**
+   * The current number of active painter threads.
+   */
+  protected int numberOfThreads;
+
+  /**
    * Starts another image thread. Note that these threads may not be stopped
    * manually. So be careful how often you call this method.
    */
@@ -120,6 +125,9 @@ public class ChunkPainter {
       @Override
       public void run() {
         try {
+          synchronized(ChunkPainter.this) {
+            ++numberOfThreads;
+          }
           while(!isInterrupted()) {
             for(;;) {
               if(hasPendingChunks()) {
@@ -131,6 +139,10 @@ public class ChunkPainter {
           }
         } catch(final InterruptedException e) {
           interrupt();
+        } finally {
+          synchronized(ChunkPainter.this) {
+            --numberOfThreads;
+          }
         }
       }
 
@@ -251,7 +263,7 @@ public class ChunkPainter {
     synchronized(imgCache) {
       contains = imgCache.containsKey(chunk);
     }
-    if(chunk.oneTimeHasChanged() || !contains) {
+    if(!contains || chunk.oneTimeHasChanged()) {
       synchronized(imgCache) {
         imgCache.put(chunk, loading);
       }

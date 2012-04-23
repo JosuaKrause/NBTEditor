@@ -262,6 +262,11 @@ public class ChunkManager {
       new HashSet<ChunkPosition>();
 
   /**
+   * The current number of active loader threads.
+   */
+  protected int numberOfThreads;
+
+  /**
    * Starts another reloader thread. Note that these threads may not be stopped
    * manually. So be careful how often you call this method.
    */
@@ -271,6 +276,9 @@ public class ChunkManager {
       @Override
       public void run() {
         try {
+          synchronized(ChunkManager.this) {
+            ++numberOfThreads;
+          }
           while(!isInterrupted()) {
             for(;;) {
               if(hasContentToReload()) {
@@ -282,6 +290,10 @@ public class ChunkManager {
           }
         } catch(final InterruptedException e) {
           interrupt();
+        } finally {
+          synchronized(ChunkManager.this) {
+            --numberOfThreads;
+          }
         }
       }
 
