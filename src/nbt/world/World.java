@@ -65,12 +65,12 @@ public class World {
   /**
    * The folder where the nether map is stored.
    */
-  public static final String NETHER = "DIM-1/";
+  public static final String NETHER = "DIM-1/region/";
 
   /**
    * The folder where the end map is stored.
    */
-  public static final String WORLD_END = "DIM1/";
+  public static final String WORLD_END = "DIM1/region/";
 
   private final File rootFolder;
 

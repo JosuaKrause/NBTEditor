@@ -248,10 +248,13 @@ public class MapViewer extends JComponent implements UpdateReceiver {
    * @param file The map folder.
    */
   public void setFolder(final File file) {
+    painter.clearAll();
     manager.setFolder(file);
     final Dimension size = getSize();
     offX = -size.width / 2;
     offZ = -size.height / 2;
+    // center of the screen
+    painter.setPos(new ChunkPosition(0, 0));
     grabFocus();
   }
 
@@ -447,6 +450,7 @@ public class MapViewer extends JComponent implements UpdateReceiver {
     selPos = pw.getPosInChunk();
     if(selChunk != null) {
       final ChunkPosition p = selChunk.getPos();
+      painter.setPos(p);
       final String tt =
           "x:" + (selPos.x + p.x) + " z:" + (selPos.z + p.z) + " b: "
               + selChunk.getBiome(selPos).name;

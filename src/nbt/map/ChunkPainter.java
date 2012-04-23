@@ -139,18 +139,45 @@ public class ChunkPainter {
     t.start();
   }
 
+  private ChunkPosition pos;
+
+  /**
+   * Setter.
+   * 
+   * @param pos Sets the currently selected position on the screen.
+   */
+  public void setPos(final ChunkPosition pos) {
+    this.pos = pos;
+  }
+
+  private static Chunk getBestChunk(final Iterator<Chunk> it,
+      final ChunkPosition pos) {
+    Chunk best = null;
+    double dist = Double.POSITIVE_INFINITY;
+    while(it.hasNext()) {
+      final Chunk next = it.next();
+      if(pos == null) return next;
+      final ChunkPosition np = next.getPos();
+      final double dx = np.x - pos.x;
+      final double dz = np.z - pos.z;
+      final double d = dx * dx + dz * dz;
+      if(d < dist) {
+        best = next;
+        dist = d;
+      }
+    }
+    return best;
+  }
+
   /**
    * Polls the next chunk and draws its offscreen image.
    */
   public void pollChunkAndDraw() {
     Chunk c;
     synchronized(chunksToDraw) {
-      final Iterator<Chunk> it = chunksToDraw.iterator();
-      if(!it.hasNext()) {
-        c = null;
-      } else {
-        c = it.next();
-        it.remove();
+      c = getBestChunk(chunksToDraw.iterator(), pos);
+      if(c != null) {
+        chunksToDraw.remove(c);
       }
     }
     if(c != null) {
@@ -158,12 +185,9 @@ public class ChunkPainter {
     }
     Chunk b;
     synchronized(biomesToDraw) {
-      final Iterator<Chunk> it = biomesToDraw.iterator();
-      if(!it.hasNext()) {
-        b = null;
-      } else {
-        b = it.next();
-        it.remove();
+      b = getBestChunk(biomesToDraw.iterator(), pos);
+      if(b != null) {
+        biomesToDraw.remove(c);
       }
     }
     if(b != null) {
@@ -310,6 +334,29 @@ public class ChunkPainter {
       for(final Image biome : values) {
         if(biome != null) {
           biome.flush();
+        }
+      }
+    }
+  }
+
+  /**
+   * Clears all images.
+   */
+  public void clearAll() {
+    synchronized(chunksToDraw) {
+      chunksToDraw.clear();
+    }
+    synchronized(biomesToDraw) {
+      biomesToDraw.clear();
+    }
+    clearBiomes();
+    synchronized(imgCache) {
+      final Image[] values =
+          imgCache.values().toArray(new Image[imgCache.size()]);
+      imgCache.clear();
+      for(final Image i : values) {
+        if(i != null) {
+          i.flush();
         }
       }
     }
