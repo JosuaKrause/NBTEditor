@@ -25,12 +25,11 @@ public class ChunkPainter {
   /**
    * Creates the image that is shown when a chunk is not loaded yet.
    * 
-   * @param scale The scaling factor.
    * @return The image.
    */
-  public static Image createLoadingImage(final double scale) {
-    final BufferedImage loading = new BufferedImage((int) (scale * 16),
-        (int) (scale * 16), BufferedImage.TYPE_INT_RGB);
+  public static Image createLoadingImage() {
+    final BufferedImage loading =
+        new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB);
     final Graphics2D g = (Graphics2D) loading.getGraphics();
     g.setColor(new Color(0x404040));
     final Rectangle r = new Rectangle(loading.getWidth(),
@@ -65,7 +64,7 @@ public class ChunkPainter {
   public ChunkPainter(final UpdateReceiver user, final double scale) {
     this.user = user;
     this.scale = scale;
-    loading = createLoadingImage(scale);
+    loading = createLoadingImage();
     int numThreads = Math.max(Runtime.getRuntime().availableProcessors(), 2);
     System.out.println("Using " + numThreads + " image loader");
     while(--numThreads >= 0) {
@@ -74,13 +73,12 @@ public class ChunkPainter {
   }
 
   private void drawChunk(final Chunk chunk) {
-    final BufferedImage img = new BufferedImage((int) (scale * 16),
-        (int) (scale * 16), BufferedImage.TYPE_INT_RGB);
+    final BufferedImage img =
+        new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB);
     final Graphics2D gi = (Graphics2D) img.getGraphics();
     for(int x = 0; x < 16; ++x) {
       for(int z = 0; z < 16; ++z) {
-        final Rectangle2D rect = new Rectangle2D.Double(x * scale, z
-            * scale, scale, scale);
+        final Rectangle2D rect = new Rectangle2D.Double(x, z, 1, 1);
         final InChunkPosition pos = new InChunkPosition(x, z);
         gi.setColor(chunk.getColorForColumn(pos));
         gi.fill(rect);
@@ -95,13 +93,12 @@ public class ChunkPainter {
   }
 
   private void drawBiome(final Chunk chunk) {
-    final BufferedImage biome = new BufferedImage((int) (scale * 16),
-        (int) (scale * 16), BufferedImage.TYPE_INT_ARGB);
+    final BufferedImage biome =
+        new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
     final Graphics2D gb = (Graphics2D) biome.getGraphics();
     for(int x = 0; x < 16; ++x) {
       for(int z = 0; z < 16; ++z) {
-        final Rectangle2D rect = new Rectangle2D.Double(x * scale, z
-            * scale, scale, scale);
+        final Rectangle2D rect = new Rectangle2D.Double(x, z, 1, 1);
         final InChunkPosition pos = new InChunkPosition(x, z);
         gb.setColor(chunk.getBiome(pos).color);
         gb.fill(rect);
@@ -255,6 +252,7 @@ public class ChunkPainter {
     synchronized(imgCache) {
       img = imgCache.get(chunk);
     }
+    g.scale(scale, scale);
     g.drawImage(img, 0, 0, null);
     if(showBiomes) {
       final Image biome;
@@ -306,12 +304,14 @@ public class ChunkPainter {
    */
   public void clearBiomes() {
     synchronized(biomeCache) {
-      for(final Image biome : biomeCache.values()) {
+      final Image[] values =
+          biomeCache.values().toArray(new Image[biomeCache.size()]);
+      biomeCache.clear();
+      for(final Image biome : values) {
         if(biome != null) {
           biome.flush();
         }
       }
-      biomeCache.clear();
     }
   }
 
