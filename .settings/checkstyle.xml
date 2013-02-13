@@ -11,6 +11,8 @@
 <module name="Checker">
   <property name="severity" value="warning"/>
   <module name="TreeWalker">
+    <property name="severity" value="ignore"/>
+    <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
     <module name="JavadocStyle">
       <property name="checkEmptyJavadoc" value="true"/>
       <property name="tokens" value="CLASS_DEF,CTOR_DEF,INTERFACE_DEF,METHOD_DEF,VARIABLE_DEF"/>
@@ -53,7 +55,10 @@
     <module name="AvoidNestedBlocks"/>
     <module name="LeftCurly"/>
     <module name="RightCurly"/>
-    <module name="DoubleCheckedLocking"/>
+    <module name="DoubleCheckedLocking">
+      <property name="severity" value="ignore"/>
+      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
+    </module>
     <module name="EqualsHashCode"/>
     <module name="IllegalInstantiation"/>
     <module name="MagicNumber">
